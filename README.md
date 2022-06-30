@@ -14,7 +14,4 @@ If there is time, include at least one resource-intensive plugin, such as Jitsi 
 
 Alternatively, extend the cost analysis to another cloud hoster, such as GCP.
 
-Besides the technical goals above, there are goals for the internship:
-   1.  Expand your AWS knowledge; consider going for a certification exam.
-   2.  Sign up to give a talk at e.g. WebZueri. Probably best to target November since they may skip the December talk date.
-   
+
