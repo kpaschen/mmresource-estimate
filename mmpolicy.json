@@ -1,0 +1,173 @@
+/* 
+I had made a list of permissions for the Mattermost devteam and divided it into two policies: one for running EC2, RDS, Cloudwatch, and another one for Cloudformation.
+To briefly describe it. The EC2, RDS instances that Mattermost developers can build must be located in the eu-central-1 zone, and they also have full access with some limitations,
+such as the Ec2 instance type not being either medium or large, and the ebs volume being limited to gb2 and not over 1000gb.
+RDS instance types are limited to 100GB of storage and cannot be large.
+The developers can only have limited access to a particular S3 bucket because files and images are stored in S3 buckets.
+
+*/
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "ec2:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "ec2:Region": "eu-central-1"
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Action": "elasticloadbalancing:*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "cloudwatch:*",
+            "Resource": "*"
+        },
+        {
+            "Sid": "Ec2InstanceRestriction",
+            "Effect": "Deny",
+            "Action": [
+                "ec2:RunInstances"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "ec2:InstanceType": [
+                        "*.medium",
+                        "*.large"
+                    ]
+                }
+            }
+        },
+        {
+            "Sid": "LimitInstanceVolumeType",
+            "Effect": "Deny",
+            "Action": [
+                "ec2:RunInstances"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "ec2:VolumeType": [
+                        "*p3",
+                        "i*",
+                        "s*"
+                    ]
+                }
+            }
+        },
+        {
+            "Sid": "LimitInstanceVolumeSize",
+            "Effect": "Deny",
+            "Action": [
+                "ec2:RunInstances"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "NumericGreaterThan": {
+                    "ec2:VolumeSize": "1000"
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Action": "s3:ListAllMyBuckets",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::mymattermosts3"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:DeleteObject",
+                "s3:GetObject",
+                "s3:PutObject"
+            ],
+            "Resource": "arn:aws:s3:::mymattermosts3/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "rds:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Deny",
+            "Action": [
+                "rds:CreateDBInstance"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "ForAnyValue:StringLike": {
+                    "rds:DatabaseClass": [
+                        "*large"
+                    ]
+                }
+            }
+        },
+        {
+            "Sid": "RDSVolumeRestriction",
+            "Effect": "Deny",
+            "Action": "rds:CreateDBInstance",
+            "Resource": "*",
+            "Condition": {
+                "NumericGreaterThan": {
+                    "rds:StorageSize": "100"
+                }
+            }
+        }
+    ]
+}
+
+
+
+/* Cloudformation: In order to create stack I need to use AllowToCreateCloudFormationStack policy and
+also I need another 2 roles such as iam:listrole and sns:listrole in the IAMandSNSListRole */
+
+
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "IAMandSNSListRole",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:*",
+                "iam:ListRoles",
+                "sns:ListOriginationNumbers",
+                "sns:ListEndpointsByPlatformApplication",
+                "sns:ListSubscriptionsByTopic",
+                "sns:ListSMSSandboxPhoneNumbers",
+                "sns:ListTopics",
+                "sns:ListSubscriptions",
+                "sns:ListPlatformApplications"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "AllowToCreateCloudFormationStack",
+            "Effect": "Allow",
+            "Action": [
+                        "s3:PutObject",
+                        "s3:ListBucket",
+                        "s3:GetObject",
+                        "s3:CreateBucket"
+                        ],
+            "Resource": "arn:aws:s3:::cf-template*"
+        }
+
+    ]
+}
+
