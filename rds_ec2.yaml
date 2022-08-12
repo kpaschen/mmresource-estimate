@@ -5,7 +5,6 @@ Parameters:
     Type: String
     Default: "mattermostcloudform"
   DbName: 
-    Default: mattermost
     Description: Database name
     Type: String
     MinLength: '1'
@@ -15,7 +14,6 @@ Parameters:
       characters.
   DbUser:
     NoEcho: 'true'
-    Default: mmuser
     Description: Master username
     Type: String
     MinLength: '1'
@@ -25,7 +23,6 @@ Parameters:
       characters.
   DbPassword:
     NoEcho: 'true'
-    Default: Hellocat123
     Description: Master password
     Type: String
     MinLength: '1'
@@ -48,7 +45,6 @@ Parameters:
 
   VPC:
     Type: String
-    Default: vpc-024c416e13ffa7981
 
   AvailabilityZone:
     Type: AWS::EC2::AvailabilityZone::Name

@@ -84,7 +84,7 @@ The developers can only have limited access to a particular S3 bucket because fi
         {
             "Effect": "Allow",
             "Action": "s3:ListBucket",
-            "Resource": "arn:aws:s3:::mymattermosts3"
+            "Resource": "arn:aws:s3:::<s3bucketname>"
         },
         {
             "Effect": "Allow",
@@ -93,7 +93,7 @@ The developers can only have limited access to a particular S3 bucket because fi
                 "s3:GetObject",
                 "s3:PutObject"
             ],
-            "Resource": "arn:aws:s3:::mymattermosts3/*"
+            "Resource": "arn:aws:s3:::<s3bucketname>/*"
         },
         {
             "Effect": "Allow",
