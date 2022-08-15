@@ -5,16 +5,16 @@ variable "availability_zone" {
 
 variable "vpcID" {
   type = string
-  default = "vpc-024c416e13ffa7981"
+  default = ""
 }
 
 variable "ami" {
   type =  string
-  default = "ami-065deacbcaac64cf2"
+  default = ""
 }
 
 variable "keypair" {
   type = string
-  default = "ansible"
+  default = ""
 }
 
