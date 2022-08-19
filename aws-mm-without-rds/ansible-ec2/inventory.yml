@@ -1,0 +1,4 @@
+mmserver:
+ hosts:
+    3.70.187.250:
+        ansible_user: ubuntu
