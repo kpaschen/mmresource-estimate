@@ -18,7 +18,7 @@ echo  "your keypair is $keypair"
 
 cd terra-ec2
 
-terraform plan -destroy -var "vpc_ID=$vpcid" -var "aws-ami=$amiid" -var "keyname=$keypair" -out tfplan
+terraform plan -var "vpc_ID=$vpcid" -var "aws-ami=$amiid" -var "keyname=$keypair" -out tfplan
 #use terraform plan -destroy to destroy the instance
 
 terraform apply "tfplan"
