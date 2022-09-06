@@ -2,7 +2,7 @@
 
 set -eux
 
-PROFILE=${AWS_PROFILE=mmuser@quangcaoiam}
+PROFILE=${AWS_PROFILE=<   >}
 
 vpcid=$(aws --profile=$PROFILE ec2 describe-vpcs --filters "Name=is-default,Values=true" |  jq -r ".Vpcs | .[] | .VpcId")
 
@@ -18,7 +18,7 @@ echo  "your keypair is $keypair"
 
 cd terra-ec2
 
-terraform plan -destroy -var "vpc_ID=$vpcid" -var "aws-ami=$amiid" -var "keyname=$keypair" -out tfplan
+terraform plan -var "vpc_ID=$vpcid" -var "aws-ami=$amiid" -var "keyname=$keypair" -out tfplan
 #use terraform plan -destroy to destroy the instance
 
 terraform apply "tfplan"
