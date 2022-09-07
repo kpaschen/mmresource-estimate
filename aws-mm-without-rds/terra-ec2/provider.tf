@@ -10,7 +10,7 @@ terraform {
 # Configure the AWS Provider
 provider "aws" {
   region = "eu-central-1"
-  shared_config_files = ["/home/quangcao/.aws/config"]
-  shared_credentials_files = ["/home/quangcao/.aws/credentials"]
-  profile = "mmuser@quangcaoiam"
+  shared_config_files = ["/home/developer/.aws/config"]
+  shared_credentials_files = ["/home/developer/.aws/credentials"]
+  profile = "mmkathriniam"
 }
