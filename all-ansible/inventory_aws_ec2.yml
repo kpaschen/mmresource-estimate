@@ -1,0 +1,13 @@
+plugin: aws_ec2
+filters:
+   tag:Application: mattermost
+   tag:User: kathrin
+compose:
+   ansible_host: public_ip_address
+
+hostnames:
+   - dns-name
+
+keyed_groups:
+   - key: tags['Purpose']
+     prefix: tag

@@ -1,4 +1,0 @@
-mmserver:
- hosts:
-    18.192.58.79:
-        ansible_user: ubuntu

@@ -3,6 +3,32 @@
   tasks:
     - include_vars: vars.yml
 
+    - name: get localhost's public ip address
+      shell:
+         cmd: "dig +short txt ch whoami.cloudflare @1.0.0.1"
+      register: dig_localhost
+
+    - name: show ip
+      debug:
+         msg: '{{ dig_localhost.stdout[1:-1] }}'
+
+    - set_fact:
+         public_ip: "{{ dig_localhost.stdout[1:-1] }}"
+
+    - name: find or create key pair
+      amazon.aws.ec2_key:
+         name: "kathrin-mm-key-pair"
+         force: false
+         key_type: ed25519
+         tags:
+           Application: mattermost
+           User: kathrin
+      register: generated_key
+
+    - name: show key
+      debug:
+        msg: "{{ generated_key }}"
+
     - name: identify availability zones for current region
       amazon.aws.aws_az_info:
       register: az_info
@@ -27,6 +53,33 @@
     - set_fact:
          chosen_subnet: "{{ subnet_info.subnets | first }}"
 
+    - name: ensure security group exists
+      amazon.aws.ec2_group:
+         vpc_id: "{{ vpc_id }}"
+         name: "kathrin-mm-security-group"
+         description: "permit ingress and egress for the mattermost instance"
+         tags:
+            Application: mattermost
+            User: kathrin
+         rules:
+            - proto: tcp
+              ports: [80]
+              rule_desc: "allow incoming traffic to port 80"
+              group_name: "kathrin-mm-security-group"
+            - proto: tcp
+              ports: [22]
+              rule_desc: "allow incoming ssh connection"
+              cidr_ip: "{{ public_ip }}/32"
+            - proto: tcp
+              ports: [5468]
+              rule_desc: "allow incoming traffic to database"
+              group_name: "kathrin-mm-security-group"
+         egress_rules:
+            - proto: tcp
+              rule_desc: "allow traffic to database"
+              ports: [5468]
+              group_name: "kathrin-mm-security-group"
+            
     - name: find database instance
       amazon.aws.ec2_instance_info:
         filters:
@@ -40,14 +93,10 @@
          db_instance_state: "{{ db_instance_info | community.general.json_query('instances[*].state.name') }}"
 
     - set_fact:
-         db_instance_subnet: "{{ db_instance_info | community.general.json_query('instances[*].subnet_id') }}"
-
-    - name: print db subnet
-      debug:
-         msg: "{{ db_instance_subnet | first or chosen_subnet.subnet_id }}"
+         db_instance_subnets: "{{ db_instance_info | community.general.json_query('instances[*].subnet_id') }}"
 
     - set_fact:
-         db_instance_id: "{{ db_instance_info | community.general.json_query('instances[*].instance_id') | first }}"
+         db_instance_subnet: "{% if db_instance_subnets!=[] %}{{ db_instance_subnets | first }}{% else %}{{ chosen_subnet.subnet_id }}{% endif %}"
 
     - name: create database instance
       amazon.aws.ec2_instance:
@@ -57,7 +106,7 @@
         filters:
           "tag:Name": "kathrin-mmdb-instance"
           "instance-state-name": "running"
-        vpc_subnet_id : "{{ db_instance_subnet | first or chosen_subnet.subnet_id }}"
+        vpc_subnet_id : "{{ db_instance_subnet }}"
         instance_type: t2.micro
         image_id: "ami-065deacbcaac64cf2" 
         detailed_monitoring: yes
@@ -72,10 +121,12 @@
         name: "kathrin-mm-instance"
         state: started
         exact_count: 1
+        key_name: "kathrin-mm-key-pair"
+        security_group: "kathrin-mm-security-group"
         filters:
           "tag:Name": "kathrin-mm-instance"
           "instance-state-name": "running"
-        vpc_subnet_id : "{{ db_instance_subnet | first or chosen_subnet.subnet_id }}"
+        vpc_subnet_id : "{{ db_instance_subnet }}"
         instance_type: t2.micro
         image_id: "ami-065deacbcaac64cf2" 
         detailed_monitoring: yes
@@ -95,31 +146,4 @@
     - set_fact:
          instance_ids: "{{ instance_info | community.general.json_query('instances[*].instance_id') }}"
 
-
-# It would be nice to attach alarms to these instances so they get taken
-# down automatically if they've been unused for a bit.
-# But it looks as though if an instance goes from stopped to started,
-# the timeseries that goes into the cpu utilization metric does not get
-# started afresh, so the instance always looks like it qualifies for the
-# alarm immediately.
-#    - set_fact: 
-#         stop_action: "arn:aws:automate:{{ chosen_az.region_name }}:ec2:stop"
-#
-#    - name: create alarms
-#      ec2_metric_alarm:
-#         state: present
-#         name: "unused-instance:{{ item }}"
-#         region: "{{ chosen_az.region_name }}"
-#         metric: "CPUUtilization"
-#         namespace: "AWS/EC2"
-#         statistic: Average
-#         comparison: LessThanOrEqualToThreshold
-#         threshold: 10.0 
-#         period: 3600
-#         evaluation_periods: 2
-#         unit: "Percent"
-#         dimensions: {'InstanceId': "{{ item }}" }
-#         alarm_actions: [ "{{ stop_action }}" ]
-#         description: "instance appears unused"
-#      loop: "{{ instance_ids }}"
 
