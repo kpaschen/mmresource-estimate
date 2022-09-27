@@ -25,10 +25,6 @@
            User: kathrin
       register: generated_key
 
-    - name: show key
-      debug:
-        msg: "{{ generated_key }}"
-
     - name: identify availability zones for current region
       amazon.aws.aws_az_info:
       register: az_info
@@ -106,6 +102,8 @@
         filters:
           "tag:Name": "kathrin-mmdb-instance"
           "instance-state-name": "running"
+        key_name: "kathrin-mm-key-pair"
+        security_group: "kathrin-mm-security-group"
         vpc_subnet_id : "{{ db_instance_subnet }}"
         instance_type: t2.micro
         image_id: "ami-065deacbcaac64cf2" 
