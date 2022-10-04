@@ -49,6 +49,25 @@
     - set_fact:
          chosen_subnet: "{{ subnet_info.subnets | first }}"
 
+    - name: ensure administrative security group exists
+      amazon.aws.ec2_group:
+         vpc_id: "{{ vpc_id }}"
+         name: "kathrin-mm-admin-group"
+         description: "temporary permission to download updates and software"
+         tags:
+            Application: mattermost
+            User: kathrin
+         rules:
+            - proto: tcp
+              ports: [22]
+              rule_desc: "allow incoming ssh connection"
+              cidr_ip: "{{ public_ip }}/32"
+         egress_rules:
+            - proto: tcp
+              rule_desc: "traffic for updates"
+              ports: [80,443]
+              cidr_ip: "0.0.0.0/0"
+
     - name: ensure security group exists
       amazon.aws.ec2_group:
          vpc_id: "{{ vpc_id }}"
@@ -67,13 +86,13 @@
               rule_desc: "allow incoming ssh connection"
               cidr_ip: "{{ public_ip }}/32"
             - proto: tcp
-              ports: [5468]
+              ports: [5432]
               rule_desc: "allow incoming traffic to database"
               group_name: "kathrin-mm-security-group"
          egress_rules:
             - proto: tcp
               rule_desc: "allow traffic to database"
-              ports: [5468]
+              ports: [5432]
               group_name: "kathrin-mm-security-group"
             
     - name: find database instance
@@ -103,7 +122,9 @@
           "tag:Name": "kathrin-mmdb-instance"
           "instance-state-name": "running"
         key_name: "kathrin-mm-key-pair"
-        security_group: "kathrin-mm-security-group"
+        security_groups:
+        -  "kathrin-mm-security-group"
+        -  "kathrin-mm-admin-group"
         vpc_subnet_id : "{{ db_instance_subnet }}"
         instance_type: t2.micro
         image_id: "ami-065deacbcaac64cf2" 
@@ -120,7 +141,9 @@
         state: started
         exact_count: 1
         key_name: "kathrin-mm-key-pair"
-        security_group: "kathrin-mm-security-group"
+        security_groups:
+        -  "kathrin-mm-security-group"
+        -  "kathrin-mm-admin-group"
         filters:
           "tag:Name": "kathrin-mm-instance"
           "instance-state-name": "running"

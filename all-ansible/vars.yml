@@ -1,2 +1,3 @@
 db_name: mattermost
 db_username: mattermost
+db_password: mattermost_pwd
