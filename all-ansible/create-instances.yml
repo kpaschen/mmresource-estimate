@@ -80,11 +80,7 @@
             - proto: tcp
               ports: [80]
               rule_desc: "allow incoming traffic to port 80"
-              group_name: "kathrin-mm-security-group"
-            - proto: tcp
-              ports: [22]
-              rule_desc: "allow incoming ssh connection"
-              cidr_ip: "{{ public_ip }}/32"
+              cidr_ip: "0.0.0.0/0"
             - proto: tcp
               ports: [5432]
               rule_desc: "allow incoming traffic to database"
