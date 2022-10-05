@@ -3,51 +3,7 @@
   hosts: tag_database
   remote_user: root
   become_method: sudo
-  tasks:
-  - include_vars: vars.yml
-
-  - name: install postgres
-    apt:
-       pkg:
-          - postgresql
-          - postgresql-contrib
-          - python3-psycopg2 # community.postgres requirement
-          - acl # community.postgres requirement
-       state: latest
-       update_cache: true
-
-  - name: add postgres to systemd
-    ansible.builtin.systemd:
-       name: postgresql
-       enabled: yes
-
-  - name: create mattermost database
-    community.postgresql.postgresql_db:
-      name: "{{db_name}}"
-      state: present
-    become: yes
-    become_user: postgres # for authentication user must be "postgres"
-
-  - name: create mattermost user
-    community.postgresql.postgresql_user:
-      name: "{{db_username}}"
-      password: "{{db_password}}"
-    become_user: postgres
-
-  - name: grant the user access to the Mattermost database
-    community.postgresql.postgresql_privs:
-      db: "{{db_name}}"
-      privs: ALL
-      roles: "{{db_username}}"
-      objs: ALL_IN_SCHEMA
-    become_user: postgres
-
-  - name: ensure postgres listens on "*"
-    lineinfile: #to replace a line
-      dest: /etc/postgresql/14/main/postgresql.conf
-      regexp: "#listen_addresses ="
-      line: "listen_addresses = '*'"
-
+  pre_tasks:
   - name: obtain the private ip address of the mattermost server
     set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
     with_items: "{{ groups['tag_mattermost'] }}"
@@ -56,80 +12,19 @@
   - name: set private ip fact
     set_fact: mm_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
 
-  - name: modify the file pg_hba.conf to allow the Mattermost server to communicate with the database.
-    blockinfile:
-      dest: /etc/postgresql/14/main/pg_hba.conf
-      marker: "{mark}"
-      marker_begin: '# "local" is for Unix domain socket connections only'
-      marker_end: '# Allow replication connections from localhost, by a user with the'
-      block: |
+  tasks:
+  - include_vars: vars.yml
 
-        local   all             all                             trust
-
-        host    all             all         127.0.0.1/32        trust
-        host    all             all         {{mm_private_ip}}/32        trust
-        host    all             all         ::1/128             trust
-
-  # A reload is not enough for getting postgres to start listening on
-  # all addresses.
-  - name: restart postgresql service
-    ansible.builtin.systemd:
-       name: postgresql
-       state: stopped
-
-  - name: restart postgresql service
-    ansible.builtin.systemd:
-       name: postgresql
-       state: started
+  - include_role:
+       name: postgres
+       tasks_from: install
 
 - name: Prepare instance for running mattermost
   become: yes
   hosts: tag_mattermost
   remote_user: root
   become_method: sudo
-  tasks:
-  - include_vars: vars.yml
-
-  - name: install depencencies
-    apt:
-      pkg:
-        - nginx
-        - postgresql-client
-      state: latest
-      update_cache: true
-
-  - name: get the mattermost package
-    unarchive:
-      src: https://releases.mattermost.com/7.1.2/mattermost-7.1.2-linux-amd64.tar.gz
-      dest: /opt
-      remote_src: true
-      validate_certs: yes
-
-  - name: create mattermost/data foldder
-    file:
-      path: /opt/mattermost/data
-      state: directory
-
-  - name: create the Mattermost group
-    ansible.builtin.group:
-      name: mattermost
-      state: present
-      system: yes
-
-  - name: create the Mattermost user
-    ansible.builtin.user:
-      name: mattermost
-      groups: mattermost
-      system: yes
-
-  - name: give write permissions to the mattermost group
-    ansible.builtin.file:
-      path: /opt/mattermost
-      owner: mattermost
-      group: mattermost
-      mode: g+w
-      recurse: yes
-
+  pre_tasks:
   - name: obtain the private ip address of the db server
     set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
     with_items: "{{ groups['tag_database'] }}"
@@ -137,58 +32,21 @@
 
   - name: set db private ip fact
     set_fact: db_private_ip="{{ db_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
-
-
-  - name: set up the database driver in the file /opt/mattermost/config/config.json
-    ansible.builtin.lineinfile:
-      path: /opt/mattermost/config/config.json
-      regexp: '"DataSource":'
-      line: '    "DataSource": "postgres://{{ db_username }}:{{ db_password }}@{{ db_private_ip }}:5432/{{ db_name }}?sslmode=disable&connect_timeout=10",'
-
-  - name: set up Mattermost to use systemd for starting and stopping.
-    template:
-      src: files/mattermost.service
-      dest: /lib/systemd/system/
-
-  - name: make systemd load the new unit.
-    ansible.builtin.systemd:
-      daemon_reload: yes
-
-  - name: start the mattermost service.
-    ansible.builtin.systemd:
-      state: started
-      name: mattermost.service
-
-  - name: enable mattermost.service
-    ansible.builtin.systemd:
-      name: mattermost.service
-      enabled: yes
-      masked: no
   
-  - name: delete default nginx site
-    file:
-      path: /etc/nginx/sites-enabled/default
-      state: absent
+  tasks:
+  - include_vars: vars.yml
 
-  - name: replace the nginx.default file with mattermost file template
-    template:
-      src: files/mattermost
-      dest: /etc/nginx/sites-available/
+  - include_role:
+       name: mattermost
+       tasks_from: install
 
-  - name: create symlink and enable the mattermost configuration
-    file:
-      src: /etc/nginx/sites-available/mattermost
-      dest: /etc/nginx/sites-enabled/mattermost
-      state: link
+- name: Set up nginx
+  become: yes
+  hosts: tag_mattermost
+  remote_user: root
+  become_method: sudo
 
-  - name: enable nginx service
-    ansible.builtin.systemd:
-      name: nginx
-      enabled: yes
-      masked: no
+  tasks:
+  - include_role:
+       name: nginx
 
-  - name: restart NGINX
-    ansible.builtin.systemd:
-      state: restarted
-      name: nginx
-    

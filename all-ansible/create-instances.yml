@@ -3,7 +3,9 @@
   tasks:
     - include_vars: vars.yml
 
-    # the postgres role depends on the common role
+    - include_role:
+         name: common
+
     - include_role:
          name: postgres
          tasks_from: create
