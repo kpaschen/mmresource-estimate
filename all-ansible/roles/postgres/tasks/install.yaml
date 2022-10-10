@@ -34,6 +34,14 @@
     objs: ALL_IN_SCHEMA
   become_user: postgres
 
+# this has to happen after mattermost gets started for the first time
+#- name: insert the mattermost system admin into the db
+#  community.postgresql.postgresql_query:
+#     db: "{{db_name}}"
+#     login_user: "{{db_username}}"
+#     login_password: "{{db_password}}" 
+#     query: insert into users (id, username, password, email, roles) values ('nd8wty1m53gpmr9hcn73rkeyqe', 'kpas', '$2a$10$G9PSnVkLo5UxPtLRex3hfeaWjzb.9T5bAM/CGrHht0kaGYFNWhQVS', 'x@y.com', 'system_admin system_user')
+
 - name: ensure postgres listens on "*"
   lineinfile: #to replace a line
     dest: /etc/postgresql/14/main/postgresql.conf
@@ -41,18 +49,14 @@
     line: "listen_addresses = '*'"
 
 - name: modify the file pg_hba.conf to allow the Mattermost server to communicate with the database.
-  blockinfile:
+  community.postgresql.postgresql_pg_hba:
     dest: /etc/postgresql/14/main/pg_hba.conf
-    marker: "{mark}"
-    marker_begin: '# "local" is for Unix domain socket connections only'
-    marker_end: '# Allow replication connections from localhost, by a user with the'
-    block: |
-
-      local   all             all                             trust
-
-      host    all             all         127.0.0.1/32        trust
-      host    all             all         {{mm_private_ip}}/32        trust
-      host    all             all         ::1/128             trust
+    contype: host
+    users: mattermost
+    source: "{{mm_private_ip}}/32"
+    databases: mattermost
+    method: md5
+    create: true
 
 # A reload is not enough for getting postgres to start listening on
 # all addresses.
