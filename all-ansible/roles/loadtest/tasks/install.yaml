@@ -11,10 +11,14 @@
      path: ./mattermost-load-test-ng
   register: gitrepo_exists
 
+- name: print gitrepo check
+  debug:
+     msg: "{{ gitrepo_exists }}"
+
 - name:  clone the loadtest repository
   shell:
      cmd: git clone https://github.com/mattermost/mattermost-load-test-ng
-  when: gitrepo_exists == False
+  when: gitrepo_exists.stat.exists == false
 
 - name: copy config file
   copy:

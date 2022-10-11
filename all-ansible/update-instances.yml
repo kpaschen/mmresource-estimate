@@ -50,6 +50,15 @@
   - include_role:
        name: nginx
 
+- name: set up monitoring
+  become: yes
+  hosts: tag_mattermost
+  remote_user: root
+  become_method: sudo
+
+  tasks:
+  - include_role:
+       name: monitoring
 
 - name: configure loadtest
   hosts: tag_loadtest

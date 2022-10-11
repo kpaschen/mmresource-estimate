@@ -6,7 +6,7 @@
 - name: copy config file to instance
   template:
      src: files/config.json
-     dst: /opt/aws/amazon-cloudwatch-agent/config/config.json
+     dest: /opt/aws/amazon-cloudwatch-agent/etc/config.json
   
 
 - name: start cloudwatch agent

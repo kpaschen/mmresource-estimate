@@ -44,6 +44,12 @@
     regexp: '"DataSource":'
     line: '    "DataSource": "postgres://{{ db_username }}:{{ db_password }}@{{ db_private_ip }}:5432/{{ db_name }}?sslmode=disable&connect_timeout=10",'
 
+- name: enable user creation
+  ansible.builtin.lineinfile:
+    path: /opt/mattermost/config/config.json
+    regexp: '"EnableUserCreation:"'
+    line: '      "EnableUserCreation": true,'
+
 - name: set up Mattermost to use systemd for starting and stopping.
   template:
     src: files/mattermost.service
