@@ -35,15 +35,15 @@
   become_user: postgres
 
 - name: stage mmdump.sql file
-  file:
+  template:
      src: files/mmdump.sql
-     dest: /home/ubuntu/mmdump.sql
+     dest: /tmp/mmdump.sql
 
 - name: restore from this dump
   community.postgresql.postgresql_db:
      state: restore
      name: "{{db_name}}"
-     target: /home/ubuntu/mmdump.sql
+     target: /tmp/mmdump.sql
   become_user: postgres
 
 - name: ensure postgres listens on "*"

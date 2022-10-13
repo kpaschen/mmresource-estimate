@@ -28,6 +28,13 @@ error_log /var/log/nginx/error.log warn;
 access_log /var/log/nginx/access.log json_timing;
 
 server {
+   listen localhost:81;
+    location /metrics {
+       stub_status on;
+    }
+}
+
+server {
   listen 80 default_server;
   server_name   127.0.0.1;
 

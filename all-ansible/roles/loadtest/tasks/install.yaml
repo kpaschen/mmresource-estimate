@@ -57,3 +57,9 @@
      dest: mattermost-load-test-ng/config/simplecontroller.json 
      mode: u=rw,g=r,o=r
      remote_src: yes
+
+- name: change ownership of the loadtest files to ubuntu
+  file:
+     path: /home/ubuntu/mattermost-load-test-ng
+     owner: ubuntu
+     group: ubuntu

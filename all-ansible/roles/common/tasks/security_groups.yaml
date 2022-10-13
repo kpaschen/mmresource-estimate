@@ -27,16 +27,24 @@
         User: kathrin
      rules:
         - proto: tcp
-          ports: [80]
-          rule_desc: "allow incoming traffic to port 80"
+          ports: [80,443]
+          rule_desc: "allow incoming traffic to ports 80 and 443"
           cidr_ip: "0.0.0.0/0"
         - proto: tcp
           ports: [5432]
           rule_desc: "allow incoming traffic to database"
           group_name: "kathrin-mm-security-group"
+        - proto: tcp
+          ports: [9113]
+          rule_desc: "allow prometheus scraping activity"
+          group_name: "kathrin-mm-security-group"
      egress_rules:
         - proto: tcp
           rule_desc: "allow traffic to database"
           ports: [5432]
+          group_name: "kathrin-mm-security-group"
+        - proto: tcp
+          ports: [9113]
+          rule_desc: "allow prometheus scraping activity"
           group_name: "kathrin-mm-security-group"
 

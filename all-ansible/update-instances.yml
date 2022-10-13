@@ -55,6 +55,16 @@
   hosts: tag_mattermost
   remote_user: root
   become_method: sudo
+  pre_tasks:
+
+  - name: obtain the private ip address of the mattermost server
+    set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
+    with_items: "{{ groups['tag_mattermost'] }}"
+    register: mm_ips
+
+  - name: set private ip fact
+    set_fact: mm_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+
 
   tasks:
   - include_role:

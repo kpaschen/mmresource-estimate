@@ -1,0 +1,10 @@
+- name: init
+  shell:
+     chdir: /home/ubuntu/mattermost-load-test-ng
+     cmd: go run ./cmd/ltagent init
+
+- name: run
+  shell:
+     chdir: /home/ubuntu/mattermost-load-test-ng
+     cmd: go run ./cmd/ltagent -n 30 -d 600
+

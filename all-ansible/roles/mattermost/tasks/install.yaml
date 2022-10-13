@@ -47,8 +47,14 @@
 - name: enable user creation
   ansible.builtin.lineinfile:
     path: /opt/mattermost/config/config.json
-    regexp: '"EnableUserCreation:"'
+    regexp: '"EnableUserCreation":'
     line: '      "EnableUserCreation": true,'
+
+- name: enable open server
+  ansible.builtin.lineinfile:
+    path: /opt/mattermost/config/config.json
+    regexp: '"EnableOpenServer":'
+    line: '      "EnableOpenServer": true,'
 
 - name: set up Mattermost to use systemd for starting and stopping.
   template:
