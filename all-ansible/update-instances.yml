@@ -1,0 +1,91 @@
+- name: Prepare instance for running postgres
+  become: yes
+  hosts: tag_database
+  remote_user: root
+  become_method: sudo
+  pre_tasks:
+  - name: obtain the private ip address of the mattermost server
+    set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
+    with_items: "{{ groups['tag_mattermost'] }}"
+    register: mm_ips
+
+  - name: set private ip fact
+    set_fact: mm_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+
+  tasks:
+  - include_vars: vars.yml
+
+  - include_role:
+       name: postgres
+       tasks_from: install
+
+- name: Prepare instance for running mattermost
+  become: yes
+  hosts: tag_mattermost
+  remote_user: root
+  become_method: sudo
+  pre_tasks:
+  - name: obtain the private ip address of the db server
+    set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
+    with_items: "{{ groups['tag_database'] }}"
+    register: db_ips
+
+  - name: set db private ip fact
+    set_fact: db_private_ip="{{ db_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+  
+  tasks:
+  - include_vars: vars.yml
+
+  - include_role:
+       name: mattermost
+       tasks_from: install
+
+- name: Set up nginx
+  become: yes
+  hosts: tag_mattermost
+  remote_user: root
+  become_method: sudo
+
+  tasks:
+  - include_role:
+       name: nginx
+
+- name: set up monitoring
+  become: yes
+  hosts: tag_mattermost
+  remote_user: root
+  become_method: sudo
+  pre_tasks:
+
+  - name: obtain the private ip address of the mattermost server
+    set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
+    with_items: "{{ groups['tag_mattermost'] }}"
+    register: mm_ips
+
+  - name: set private ip fact
+    set_fact: mm_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+
+
+  tasks:
+  - include_role:
+       name: monitoring
+
+- name: configure loadtest
+  hosts: tag_loadtest
+  become: yes
+  remote_user: root
+  become_method: sudo
+  pre_tasks:
+  - name: obtain the private ip address of the mattermost server
+    set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
+    with_items: "{{ groups['tag_mattermost'] }}"
+    register: mm_ips
+
+  - name: set private ip fact
+    set_fact: mm_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+
+  tasks:
+  - include_vars: vars.yml
+  - include_role:
+       name: loadtest
+       tasks_from: install

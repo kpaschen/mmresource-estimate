@@ -2,13 +2,16 @@
 
 set -eux
 
-PROFILE=${AWS_PROFILE=<   >}
+PROFILE=${AWS_PROFILE:-mmkathriniam}
 
 vpcid=$(aws --profile=$PROFILE ec2 describe-vpcs --filters "Name=is-default,Values=true" |  jq -r ".Vpcs | .[] | .VpcId")
 
-amiid=$(aws --profile=$PROFILE ec2 describe-images --filters "Name=tag:Type,Values=Mattermost-AMI" |  jq -r ".Images | .[] | .ImageId")
+# amiid=$(aws --profile=$PROFILE ec2 describe-images --filters "Name=tag:Type,Values=Mattermost-AMI" |  jq -r ".Images | .[] | .ImageId")
+amiid="ami-065deacbcaac64cf2"
+#amiid=$(aws --profile=$PROFILE ec2 describe-images --owner amazon --filters "Name=is-public,Values=true" "Name=architecture,Values=x86_64" |  jq -r ".Images | .[] | .ImageId")
 
-keypair=$(aws --profile=$PROFILE ec2 describe-key-pairs --filters "Name=tag:Type,Values=Mattermost-key" |  jq -r ".KeyPairs | .[] | .KeyName")
+#keypair=$(aws --profile=$PROFILE ec2 describe-key-pairs --filters "Name=tag:Type,Values=Mattermost-key" |  jq -r ".KeyPairs | .[] | .KeyName")
+keypair=$(aws --profile=$PROFILE ec2 describe-key-pairs --filters "Name=tag:Mattermost-key,Values=" |  jq -r ".KeyPairs | .[] | .KeyName")
 
 echo  "your default vpc id is $vpcid"
 
@@ -45,7 +48,8 @@ EOF
 # use the ansible valt to encrypt the vars.yml file because i put secrets data in it.
 # if i want to update the instane i will just comment the command out
 
-ansible-playbook --ask-vault-pass main.yml
+# ansible-playbook --ask-vault-pass main.yml
+ansible-playbook main.yml
 
 else
 

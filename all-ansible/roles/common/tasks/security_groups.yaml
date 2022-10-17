@@ -1,0 +1,50 @@
+- name: ensure administrative security group exists
+  amazon.aws.ec2_group:
+     vpc_id: "{{ vpc_id }}"
+     name: "kathrin-mm-admin-group"
+     description: "temporary permission to download updates and software"
+     tags:
+        Application: mattermost
+        User: kathrin
+     rules:
+        - proto: tcp
+          ports: [22]
+          rule_desc: "allow incoming ssh connection"
+          cidr_ip: "{{ public_ip }}/32"
+     egress_rules:
+        - proto: tcp
+          rule_desc: "traffic for updates"
+          ports: [80,443]
+          cidr_ip: "0.0.0.0/0"
+
+- name: ensure security group exists
+  amazon.aws.ec2_group:
+     vpc_id: "{{ vpc_id }}"
+     name: "kathrin-mm-security-group"
+     description: "permit ingress and egress for the mattermost instance"
+     tags:
+        Application: mattermost
+        User: kathrin
+     rules:
+        - proto: tcp
+          ports: [80,443]
+          rule_desc: "allow incoming traffic to ports 80 and 443"
+          cidr_ip: "0.0.0.0/0"
+        - proto: tcp
+          ports: [5432]
+          rule_desc: "allow incoming traffic to database"
+          group_name: "kathrin-mm-security-group"
+        - proto: tcp
+          ports: [9113]
+          rule_desc: "allow prometheus scraping activity"
+          group_name: "kathrin-mm-security-group"
+     egress_rules:
+        - proto: tcp
+          rule_desc: "allow traffic to database"
+          ports: [5432]
+          group_name: "kathrin-mm-security-group"
+        - proto: tcp
+          ports: [9113]
+          rule_desc: "allow prometheus scraping activity"
+          group_name: "kathrin-mm-security-group"
+

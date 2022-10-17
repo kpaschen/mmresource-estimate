@@ -1,0 +1,4 @@
+- include_tasks: host_ip.yaml
+- include_tasks: key_pair.yaml
+- include_tasks: subnet.yaml
+- include_tasks: security_groups.yaml

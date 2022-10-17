@@ -1,0 +1,76 @@
+- name: install postgres
+  apt:
+     pkg:
+        - postgresql
+        - postgresql-contrib
+        - python3-psycopg2 # community.postgres requirement
+        - acl # community.postgres requirement
+     state: latest
+     update_cache: true
+
+- name: add postgres to systemd
+  ansible.builtin.systemd:
+     name: postgresql
+     enabled: yes
+
+- name: create mattermost database
+  community.postgresql.postgresql_db:
+    name: "{{db_name}}"
+    state: present
+  become: yes
+  become_user: postgres # for authentication user must be "postgres"
+
+- name: create mattermost user
+  community.postgresql.postgresql_user:
+    name: "{{db_username}}"
+    password: "{{db_password}}"
+  become_user: postgres
+
+- name: grant the user access to the Mattermost database
+  community.postgresql.postgresql_privs:
+    db: "{{db_name}}"
+    privs: ALL
+    roles: "{{db_username}}"
+    objs: ALL_IN_SCHEMA
+  become_user: postgres
+
+- name: stage mmdump.sql file
+  template:
+     src: files/mmdump.sql
+     dest: /tmp/mmdump.sql
+
+- name: restore from this dump
+  community.postgresql.postgresql_db:
+     state: restore
+     name: "{{db_name}}"
+     target: /tmp/mmdump.sql
+  become_user: postgres
+
+- name: ensure postgres listens on "*"
+  lineinfile: #to replace a line
+    dest: /etc/postgresql/14/main/postgresql.conf
+    regexp: "#listen_addresses ="
+    line: "listen_addresses = '*'"
+
+- name: modify the file pg_hba.conf to allow the Mattermost server to communicate with the database.
+  community.postgresql.postgresql_pg_hba:
+    dest: /etc/postgresql/14/main/pg_hba.conf
+    contype: host
+    users: mattermost
+    source: "{{mm_private_ip}}/32"
+    databases: mattermost
+    method: md5
+    create: true
+
+# A reload is not enough for getting postgres to start listening on
+# all addresses.
+- name: restart postgresql service
+  ansible.builtin.systemd:
+     name: postgresql
+     state: stopped
+
+- name: restart postgresql service
+  ansible.builtin.systemd:
+     name: postgresql
+     state: started
+
