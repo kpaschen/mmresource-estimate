@@ -1,0 +1,6 @@
+server {
+  listen localhost:9091;
+  location /monitoring {
+     proxy_pass http://127.0.0.1:9090;
+  }
+}

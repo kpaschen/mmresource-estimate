@@ -13,13 +13,39 @@
   shell:
      cmd: /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/etc/config.json
 
+- name: see if prometheus is already installed
+  stat:
+     path: /usr/local/bin/prometheus
+  register: prometheus_exists
+
+- name: create prometheus user
+  ansible.builtin.user:
+     create_home: no
+     name: prometheus
+     state: present
+     shell: /usr/bin/false
+
 - name: download prometheus
   shell:
-     cmd: useradd --no-create-home prometheus && mkdir /etc/prometheus && mkdir /var/lib/prometheus && wget https://github.com/prometheus/prometheus/releases/download/v2.19.0/prometheus-2.19.0.linux-amd64.tar.gz && tar xzf prometheus-2.19.0.linux-amd64.tar.gz && cp prometheus-2.19.0.linux-amd64/prometheus /usr/local/bin && cp prometheus-2.19.0.linux-amd64/promtool /usr/local/bin && cp -r prometheus-2.19.0.linux-amd64/consoles /etc/prometheus && cp -r prometheus-2.19.0.linux-amd64/console_libraries /etc/prometheus
+     cmd: mkdir -p /etc/prometheus && mkdir -p /var/lib/prometheus && wget https://github.com/prometheus/prometheus/releases/download/v2.19.0/prometheus-2.19.0.linux-amd64.tar.gz && tar xzf prometheus-2.19.0.linux-amd64.tar.gz && cp prometheus-2.19.0.linux-amd64/prometheus /usr/local/bin && cp prometheus-2.19.0.linux-amd64/promtool /usr/local/bin && cp -r prometheus-2.19.0.linux-amd64/consoles /etc/prometheus && cp -r prometheus-2.19.0.linux-amd64/console_libraries /etc/prometheus
+  when: prometheus_exists.stat.exists == false
+
+- name: see if prometheus exporter is already installed
+  stat:
+     path: /usr/local/bin/nginx_prometheus_exporter
+  register: prometheus_exporter_exists
+
+- name: create nginx exporter user
+  ansible.builtin.user:
+     create_home: no
+     name: nginx_exporter
+     state: present
+     shell: /usr/bin/false
 
 - name: download prometheus exporter
   shell:
-     cmd: wget https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v0.11.0/nginx-prometheus-exporter_0.11.0_linux_amd64.tar.gz && tar -xzf nginx-prometheus-exporter_0.11.0_linux_amd64.tar.gz && mv nginx-prometheus-exporter /usr/local/bin  && useradd -r nginx_exporter
+     cmd: wget https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v0.11.0/nginx-prometheus-exporter_0.11.0_linux_amd64.tar.gz && tar -xzf nginx-prometheus-exporter_0.11.0_linux_amd64.tar.gz && mv nginx-prometheus-exporter /usr/local/bin 
+  when: prometheus_exporter_exists.stat.exists == false
 
 - name: copy the prometheus yaml file
   template:
@@ -31,7 +57,7 @@
      src: files/prometheus.service
      dest: /etc/systemd/system/prometheus.service
 
-- name: chown everything to prometheus owns it
+- name: chown everything to prometheus
   shell:
      cmd: chown prometheus:prometheus /etc/prometheus && chown prometheus:prometheus /usr/local/bin/prometheus && chown prometheus:prometheus /usr/local/bin/promtool && chown -R prometheus:prometheus /etc/prometheus/consoles && chown -R prometheus:prometheus /etc/prometheus/console_libraries &&  chown -R prometheus:prometheus /var/lib/prometheus
 

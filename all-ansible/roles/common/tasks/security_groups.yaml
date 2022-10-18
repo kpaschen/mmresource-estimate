@@ -27,8 +27,8 @@
         User: kathrin
      rules:
         - proto: tcp
-          ports: [80,443]
-          rule_desc: "allow incoming traffic to ports 80 and 443"
+          ports: [80,443,8090]
+          rule_desc: "allow incoming traffic to ports 80 and 443. 8090 for prometheus graphs"
           cidr_ip: "0.0.0.0/0"
         - proto: tcp
           ports: [5432]

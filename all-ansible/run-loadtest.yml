@@ -1,0 +1,12 @@
+- name: Run the loadtests
+  become: yes
+  hosts: tag_loadtest
+  remote_user: ubuntu
+  become_method: sudo
+
+  tasks:
+
+  - include_role:
+       name: loadtest
+       tasks_from: run
+

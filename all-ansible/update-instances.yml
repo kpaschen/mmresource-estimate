@@ -40,7 +40,17 @@
        name: mattermost
        tasks_from: install
 
-- name: Set up nginx
+#- name: Set up nginx
+#  become: yes
+#  hosts: tag_mattermost
+#  remote_user: root
+#  become_method: sudo
+#
+#  tasks:
+#  - include_role:
+#       name: nginx
+
+- name: set up apache
   become: yes
   hosts: tag_mattermost
   remote_user: root
@@ -48,7 +58,7 @@
 
   tasks:
   - include_role:
-       name: nginx
+       name: apache
 
 - name: set up monitoring
   become: yes

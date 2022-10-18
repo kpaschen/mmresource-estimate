@@ -1,0 +1,90 @@
+- name: install depencencies
+  apt:
+    pkg:
+      - apache2
+      - curl
+    state: latest
+    update_cache: true
+
+- name: see if apache exporter is already installed
+  stat:
+     path: /usr/local/bin/apache_exporter
+  register: apache_exporter_exists
+
+- name: install apache exporter
+  shell:
+     cmd: curl -s https://api.github.com/repos/Lusitaniae/apache_exporter/releases/latest|grep browser_download_url|grep linux-amd64|cut -d '"' -f 4|wget -qi - && tar xvf apache_exporter-*.linux-amd64.tar.gz && cp apache_exporter-*.linux-amd64/apache_exporter /usr/local/bin && chmod +x /usr/local/bin/apache_exporter
+  when: apache_exporter_exists.stat.exists == false
+
+- name: enable proxy module
+  shell:
+     cmd: a2enmod proxy && a2enmod proxy_http
+
+- name: create apache_exporter service
+  template:
+     src: files/apache_exporter.service
+     dest: /etc/systemd/system/apache_exporter.service
+
+- name: create a mattermost site
+  template:
+    src: files/mattermost
+    dest: /etc/apache2/sites-available/mattermost.conf
+
+- name: create symlink for mattermost conf
+  file:
+    src: /etc/apache2/sites-available/mattermost.conf
+    dest: /etc/apache2/sites-enabled/mattermost.conf
+    state: link
+
+- name: enable mattermost, disable default site
+  shell:
+     cmd: a2ensite mattermost.conf && a2dissite 000-default.conf
+
+- name: create prometheus site
+  template:
+    src: files/prometheus.conf
+    dest: /etc/apache2/sites-available/prometheus.conf
+
+- name: create symlink for prometheus configuration
+  file:
+    src: /etc/apache2/sites-available/prometheus.conf
+    dest: /etc/apache2/sites-enabled/prometheus.conf
+    state: link
+
+- name: enable prometheus
+  shell:
+     cmd: a2ensite prometheus.conf
+
+- name: copy apache2.conf file
+  copy:
+     src: files/apache2.conf
+     dest: /etc/apache2/apache2.conf 
+
+- name: copy ports conf file
+  copy:
+     src: files/ports.conf
+     dest: /etc/apache2/ports.conf
+
+- name: make systemd load the new unit.
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: enable apache_exporter
+  ansible.builtin.systemd:
+     name: apache_exporter.service
+     enabled: yes
+
+- name: stop nginx
+  ansible.builtin.systemd:
+     name: nginx.service
+     enabled: no
+
+- name: restart apache
+  ansible.builtin.systemd:
+    state: restarted
+    name: apache2.service
+ 
+- name: start apache exporter
+  ansible.builtin.systemd:
+     state: started
+     name: apache_exporter.service
