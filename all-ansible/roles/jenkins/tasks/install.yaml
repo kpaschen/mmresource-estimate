@@ -1,0 +1,55 @@
+- name: install java
+  yum:
+     name: java
+     state: present
+     update_cache: yes
+  tags: jenkins
+
+- name: add the jenkins repository
+  yum_repository:
+        name: jenkins
+        description: jenkins
+        baseurl: "https://pkg.jenkins.io/redhat/"
+        gpgkey: "https://pkg.jenkins.io/redhat/jenkins.io.key"
+        gpgcheck: yes
+  tags: jenkins
+
+- name: install jenkins
+  yum:
+     name: jenkins
+     state: present
+     update_cache: yes
+  tags: jenkins
+
+- name: see if the load test key already exists
+  stat:
+     path: "/home/{{ ansible_user }}/.ssh/loadtestkey.pub"
+  register: key_exists
+  tags: always
+
+- name: create loadtest key pair
+  shell:
+     cmd: "ssh-keygen -t ed25519 -f /home/{{ ansible_user }}/.ssh/loadtestkey -N ''"
+  tags: jenkins
+  when: key_exists.stat.exists == false
+
+- name: read loadtest public key
+  shell:
+     cmd: "cat /home/{{ ansible_user }}/.ssh/loadtestkey.pub"
+  register: loadtest_public_key_contents
+  tags: always
+
+- set_fact:
+     loadtest_public_key: "{{ loadtest_public_key_contents.stdout_lines[-1] }}"
+  tags: always
+
+- debug:
+     msg: "{{ loadtest_public_key }}"
+  tags: always
+
+- name: enable jenkins service
+  service:
+        name: jenkins
+        state: started
+        enabled: yes
+  tags: jenkins

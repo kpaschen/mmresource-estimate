@@ -1,0 +1,20 @@
+- name: create jenkins instance
+  amazon.aws.ec2_instance:
+    name: "kathrin-jenkins-instance"
+    state: started
+    exact_count: 1
+    key_name: "kathrin-mm-key-pair"
+    security_groups:
+    -  "kathrin-mm-admin-group"
+    filters:
+      "tag:Name": "kathrin-jenkins-instance"
+      "instance-state-name": "running"
+    vpc_subnet_id : "{{ db_instance_subnet }}"
+    instance_type: t2.micro
+    image_id: "ami-05ff5eaef6149df49"
+    detailed_monitoring: yes
+    tags:
+       Application: mattermost
+       User: kathrin
+       Purpose: jenkins
+

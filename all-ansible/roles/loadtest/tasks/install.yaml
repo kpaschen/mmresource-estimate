@@ -5,20 +5,24 @@
      - golang
      state: latest
      update_cache: true
+  tags: loadtest
 
 - name: see if loadtest repo already exists
   stat:
      path: ./mattermost-load-test-ng
   register: gitrepo_exists
+  tags: loadtest
 
 - name: print gitrepo check
   debug:
      msg: "{{ gitrepo_exists }}"
+  tags: loadtest
 
 - name:  clone the loadtest repository
   shell:
      cmd: git clone https://github.com/mattermost/mattermost-load-test-ng
   when: gitrepo_exists.stat.exists == false
+  tags: loadtest
 
 - name: copy config file
   copy:
@@ -26,30 +30,35 @@
      dest: mattermost-load-test-ng/config/config.json 
      mode: u=rw,g=r,o=r
      remote_src: yes
+  tags: loadtest
 
 - name: adapt serverurl 
   ansible.builtin.lineinfile:
      path: mattermost-load-test-ng/config/config.json
      regexp: '"ServerURL"'
      line: '     "ServerURL": "http://{{mm_private_ip}}:80",' 
+  tags: loadtest
 
 - name: adapt websocketurl 
   ansible.builtin.lineinfile:
      path: mattermost-load-test-ng/config/config.json
      regexp: '"WebSocketURL"'
      line: '     "WebSocketURL": "ws://{{mm_private_ip}}:80",' 
+  tags: loadtest
 
 - name: adapt adminemail 
   ansible.builtin.lineinfile:
      path: mattermost-load-test-ng/config/config.json
      regexp: '"AdminEmail"'
      line: '     "AdminEmail": "x@y.com",'
+  tags: loadtest
 
 - name: adapt adminpwd 
   ansible.builtin.lineinfile:
      path: mattermost-load-test-ng/config/config.json
      regexp: '"AdminPassword"'
      line: '     "AdminPassword": "{{ mm_admin_password }}"'
+  tags: loadtest
 
 - name: copy simplecontroller file
   copy:
@@ -57,9 +66,43 @@
      dest: mattermost-load-test-ng/config/simplecontroller.json 
      mode: u=rw,g=r,o=r
      remote_src: yes
+  tags: loadtest
+
+- name: create loadtest user
+  ansible.builtin.user:
+     create_home: yes
+     name: loadtest
+     state: present
+     shell: /usr/bin/bash
+  tags: loadtest
+
+- name: ensure .ssh directory exists
+  ansible.builtin.file:
+     name: /home/loadtest/.ssh
+     state: directory
+     mode: '700'
+     owner: loadtest
+     group: loadtest
+  tags: loadtest
+
+- name: ensure .ssh/authorized_keys exists
+  ansible.builtin.file:
+     name: /home/loadtest/.ssh/authorized_keys
+     state: touch
+     mode: '600'
+     owner: loadtest
+     group: loadtest
+  tags: loadtest
+
+- name: copy loadtest user's public key to loadtest machine
+  shell:
+     cmd: "echo {{ loadtest_public_key }} >> /home/loadtest/.ssh/authorized_keys"
+  tags: loadtest
 
 - name: change ownership of the loadtest files to ubuntu
   file:
      path: /home/ubuntu/mattermost-load-test-ng
      owner: ubuntu
      group: ubuntu
+  tags: loadtest
+

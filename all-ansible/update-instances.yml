@@ -14,6 +14,7 @@
 
   tasks:
   - include_vars: vars.yml
+  - include_vars: vault.yml
 
   - include_role:
        name: postgres
@@ -35,6 +36,7 @@
   
   tasks:
   - include_vars: vars.yml
+  - include_vars: vault.yml
 
   - include_role:
        name: mattermost
@@ -80,6 +82,18 @@
   - include_role:
        name: monitoring
 
+- name: set up jenkins
+  hosts: tag_jenkins
+  become: yes
+  remote_user: root
+  become_method: sudo
+
+  tasks:
+  - include_role:
+       name: jenkins
+       tasks_from: install
+    tags: jenkins
+    
 - name: configure loadtest
   hosts: tag_loadtest
   become: yes
@@ -90,12 +104,33 @@
     set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
     with_items: "{{ groups['tag_mattermost'] }}"
     register: mm_ips
+    tags: loadtest
 
   - name: set private ip fact
     set_fact: mm_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+    tags: loadtest
+
+  - name: extract public key
+    set_fact: publickey="{{ hostvars[item].loadtest_public_key }}"
+    with_items: "{{ groups['tag_jenkins'] }}"
+    register: publickeys
+    tags: loadtest
+
+  - debug:
+       msg: "{{ publickeys }}"
+    tags: loadtest
+
+  - name: set public key fact
+    set_fact: loadtest_public_key="{{ publickeys.results | map(attribute='ansible_facts.publickey') | first }}"
+    tags: loadtest
 
   tasks:
   - include_vars: vars.yml
+    tags: loadtest
+  - include_vars: vault.yml
+    tags: loadtest
   - include_role:
        name: loadtest
        tasks_from: install
+    tags: loadtest
+

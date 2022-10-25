@@ -1,4 +1,4 @@
 db_name: mattermost
 db_username: mattermost
-db_password: mattermost_pwd
-mm_admin_password: mysecretpassword
+
+loadtest-user-keyfile: .ltuserkeyfile
