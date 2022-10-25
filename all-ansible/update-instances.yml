@@ -110,20 +110,6 @@
     set_fact: mm_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
     tags: loadtest
 
-  - name: extract public key
-    set_fact: publickey="{{ hostvars[item].loadtest_public_key }}"
-    with_items: "{{ groups['tag_jenkins'] }}"
-    register: publickeys
-    tags: loadtest
-
-  - debug:
-       msg: "{{ publickeys }}"
-    tags: loadtest
-
-  - name: set public key fact
-    set_fact: loadtest_public_key="{{ publickeys.results | map(attribute='ansible_facts.publickey') | first }}"
-    tags: loadtest
-
   tasks:
   - include_vars: vars.yml
     tags: loadtest
