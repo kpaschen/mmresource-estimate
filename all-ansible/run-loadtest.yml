@@ -3,8 +3,24 @@
   hosts: tag_loadtest
   remote_user: ubuntu
   become_method: sudo
+  pre_tasks:
+  - name: obtain the private ip address of the mattermost server
+    set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
+    with_items: "{{ groups['tag_mattermost'] }}"
+    register: mm_ips
+    tags: loadtest
+
+  - name: set private ip fact
+    set_fact: mm_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+    tags: loadtest
 
   tasks:
+  - include_vars: vault.yml
+
+  - include_role:
+       name: loadtest
+       tasks_from: install
+    tags: run_loadtest
 
   - include_role:
        name: loadtest

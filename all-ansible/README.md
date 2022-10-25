@@ -20,4 +20,6 @@ Then run the playbooks like this:
 AWS_PROFILE=<your profile> ansible-playbook create_instances.yml
 
 AWS_PROFILE=<your_profile> ansible-playbook -i inventory_aws_ec2.yml update-instances.yml --ask-vault-pass --skip-tags=run_loadtest
+
+AWS_PROFILE=<your profile> ansible-playbook -i inventory_aws_ec2.yml run-loadtest.yml --ask-vault-pass
 ```

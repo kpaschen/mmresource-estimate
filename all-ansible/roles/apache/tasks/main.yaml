@@ -77,6 +77,11 @@
 - name: stop nginx
   ansible.builtin.systemd:
      name: nginx.service
+     state: stopped
+
+- name: disable nginx
+  ansible.builtin.systemd:
+     name: nginx.service
      enabled: no
 
 - name: restart apache
