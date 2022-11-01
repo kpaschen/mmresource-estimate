@@ -1,9 +1,9 @@
 - name: find database instance
   amazon.aws.ec2_instance_info:
     filters:
-      "tag:Name": "kathrin-mmdb-instance"
+      "tag:Name": "{{ name_prefix }}-mmdb-instance"
       "tag:Application": "mattermost"
-      "tag:User": "kathrin"
+      "tag:User": "{{ name_prefix }}"
       "tag:Purpose": "database"
   register: db_instance_info
 
@@ -18,16 +18,16 @@
 
 - name: create database instance
   amazon.aws.ec2_instance:
-    name: "kathrin-mmdb-instance"
+    name: "{{ name_prefix }}-mmdb-instance"
     state: started
     exact_count: 1
     filters:
-      "tag:Name": "kathrin-mmdb-instance"
+      "tag:Name": "{{ name_prefix }}-mmdb-instance"
       "instance-state-name": "running"
-    key_name: "kathrin-mm-key-pair"
+    key_name: "{{ name_prefix }}-mm-key-pair"
     security_groups:
-    -  "kathrin-mm-security-group"
-    -  "kathrin-mm-admin-group"
+    -  "{{ name_prefix }}-mm-security-group"
+    -  "{{ name_prefix }}-kathrin-mm-admin-group"
     vpc_subnet_id : "{{ db_instance_subnet }}"
     instance_type: t2.micro
     image_id: "ami-065deacbcaac64cf2"
@@ -35,6 +35,6 @@
     instance_role: logstreamers
     tags:
        Application: mattermost
-       User: kathrin
+       User: "{{ name_prefix }}"
        Purpose: database
 

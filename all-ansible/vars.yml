@@ -1,4 +1,10 @@
 db_name: mattermost
 db_username: mattermost
 
-loadtest-user-keyfile: .ltuserkeyfile
+loadtest_ami: ami-07e6fd27044381b04
+jenkins_ami: ami-0c2f53edc505dbbb1
+jenkins_iam_role: mm-jenkins
+
+jenkins_key_pair: mm-jenkins
+
+name_prefix: "kathrin"

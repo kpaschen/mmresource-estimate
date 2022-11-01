@@ -82,18 +82,6 @@
   - include_role:
        name: monitoring
 
-- name: set up jenkins
-  hosts: tag_jenkins
-  become: yes
-  remote_user: root
-  become_method: sudo
-
-  tasks:
-  - include_role:
-       name: jenkins
-       tasks_from: install
-    tags: jenkins
-    
 - name: configure loadtest
   hosts: tag_loadtest
   become: yes

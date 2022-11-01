@@ -1,14 +1,14 @@
 - name: create mattermost instance
   amazon.aws.ec2_instance:
-    name: "kathrin-mm-instance"
+    name: "{{ name_prefix }}-mm-instance"
     state: started
     exact_count: 1
-    key_name: "kathrin-mm-key-pair"
+    key_name: "{{ name_prefix }}-mm-key-pair"
     security_groups:
-    -  "kathrin-mm-security-group"
-    -  "kathrin-mm-admin-group"
+    -  "{{ name_prefix }}-mm-security-group"
+    -  "{{ name_prefix }}-mm-admin-group"
     filters:
-      "tag:Name": "kathrin-mm-instance"
+      "tag:Name": "{{ name_prefix }}-mm-instance"
       "instance-state-name": "running"
     vpc_subnet_id : "{{ db_instance_subnet }}"
     instance_type: t2.micro
@@ -17,6 +17,6 @@
     instance_role: logstreamers
     tags:
        Application: mattermost
-       User: kathrin
+       User: "{{ name_prefix }}"
        Purpose: mattermost
 

@@ -1,38 +1,42 @@
 - name: ensure administrative security group exists
   amazon.aws.ec2_group:
      vpc_id: "{{ vpc_id }}"
-     name: "kathrin-mm-admin-group"
+     name: "{{ name_prefix }}-mm-admin-group"
      description: "temporary permission to download updates and software"
      tags:
         Application: mattermost
-        User: kathrin
+        User: "{{ name_prefix }}"
      rules:
         - proto: tcp
           ports: [22]
           rule_desc: "allow incoming ssh connection"
           cidr_ip: "{{ public_ip }}/32"
         - proto: tcp
-          ports: [22]
-          rule_desc: "allow ssh connection from within group"
-          group_name: "kathrin-mm-admin-group"
+          ports: [8080]
+          rule_desc: "allow traffic for jenkins"
+          cidr_ip: "0.0.0.0/0"
      egress_rules:
         - proto: tcp
           rule_desc: "traffic for updates"
           ports: [80,443]
           cidr_ip: "0.0.0.0/0"
         - proto: tcp
+          ports: [8090]
+          rule_desc: "allow prometheus connection within group"
+          group_name: "{{ name_prefix }}-mm-admin-group"
+        - proto: tcp
           ports: [22]
-          rule_desc: "allow ssh connection within group"
-          group_name: "kathrin-mm-admin-group"
+          group_name: "{{ name_prefix }}-mm-security-group"
+          rule_desc: "jenkins is allowed to ssh to the loadtest task runner"
 
 - name: ensure security group exists
   amazon.aws.ec2_group:
      vpc_id: "{{ vpc_id }}"
-     name: "kathrin-mm-security-group"
+     name: "{{ name_prefix }}-mm-security-group"
      description: "permit ingress and egress for the mattermost instance"
      tags:
         Application: mattermost
-        User: kathrin
+        User: "{{ name_prefix }}"
      rules:
         - proto: tcp
           ports: [80,443,8090,8080]
@@ -41,18 +45,22 @@
         - proto: tcp
           ports: [5432]
           rule_desc: "allow incoming traffic to database"
-          group_name: "kathrin-mm-security-group"
+          group_name: "{{ name_prefix }}-mm-security-group"
         - proto: tcp
           ports: [9113]
           rule_desc: "allow prometheus scraping activity"
-          group_name: "kathrin-mm-security-group"
+          group_name: "{{ name_prefix }}-mm-security-group"
+        - proto: tcp
+          ports: [22]
+          group_name: "{{ name_prefix }}-mm-admin-group"
+          rule_desc: "jenkins can ssh to the loadtest runner"
      egress_rules:
         - proto: tcp
           rule_desc: "allow traffic to database"
           ports: [5432]
-          group_name: "kathrin-mm-security-group"
+          group_name: "{{ name_prefix }}-mm-security-group"
         - proto: tcp
           ports: [9113]
           rule_desc: "allow prometheus scraping activity"
-          group_name: "kathrin-mm-security-group"
+          group_name: "{{ name_prefix }}-mm-security-group"
 

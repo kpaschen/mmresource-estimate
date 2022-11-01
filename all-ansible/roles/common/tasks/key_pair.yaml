@@ -1,10 +1,10 @@
 - name: find or create key pair
   amazon.aws.ec2_key:
-     name: "kathrin-mm-key-pair"
+     name: "{{ name_prefix }}-mm-key-pair"
      force: false
      key_type: ed25519
      tags:
        Application: mattermost
-       User: kathrin
+       User: "{{ name_prefix }}"
   register: generated_key
 
