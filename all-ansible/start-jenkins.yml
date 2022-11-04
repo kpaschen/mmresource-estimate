@@ -1,0 +1,15 @@
+- name: Start jenkins
+  become: yes
+  hosts: tag_jenkins
+  remote_user: root
+  become_method: sudo
+
+  tasks:
+  - include_vars: vault.yml
+
+  - include_role:
+       name: jenkins
+       tasks_from: install
+    tags: jenkins
+
+

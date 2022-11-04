@@ -62,7 +62,7 @@
 - name: run ltagent init in order to download all the go dependencies
   shell:
      chdir: /home/ubuntu/mattermost-load-test-ng
-     cmd: go run ./cmd/ltagent init
+     cmd: go mod download && go mod tidy && go run ./cmd/ltagent init
 
 - name: change ownership of the loadtest files to ubuntu
   file:

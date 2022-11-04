@@ -1,8 +1,8 @@
 db_name: mattermost
 db_username: mattermost
 
-loadtest_ami: ami-07e6fd27044381b04
-jenkins_ami: ami-0c2f53edc505dbbb1
+loadtest_ami: ami-03ab66b72d5a944dd
+jenkins_ami: ami-01acf6fe54b06a781
 jenkins_iam_role: mm-jenkins
 
 jenkins_key_pair: mm-jenkins
