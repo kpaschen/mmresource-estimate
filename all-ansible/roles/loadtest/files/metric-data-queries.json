@@ -1,0 +1,106 @@
+[
+  {
+     "Id": "channelLatency",
+     "MetricStat": {
+        "Metric": {
+           "Namespace": "KathrinMM",
+           "MetricName": "ChannelLatency"
+        },
+        "Period": 300,
+        "Stat": "Average",
+        "Unit": "Microseconds"
+     }
+  },
+  {
+     "Id": "statusLatency",
+     "MetricStat": {
+        "Metric": {
+           "Namespace": "KathrinMM",
+           "MetricName": "StatusLatency"
+        },
+        "Period": 300,
+        "Stat": "Average",
+        "Unit": "Microseconds"
+     }
+  },
+  {
+     "Id": "userLatency",
+     "MetricStat": {
+        "Metric": {
+           "Namespace": "KathrinMM",
+           "MetricName": "UserLatency"
+        },
+        "Period": 300,
+        "Stat": "Average",
+        "Unit": "Microseconds"
+     }
+  },
+  {
+     "Id": "viewChannelLatency",
+     "MetricStat": {
+        "Metric": {
+           "Namespace": "KathrinMM",
+           "MetricName": "ViewChannelLatency"
+        },
+        "Period": 300,
+        "Stat": "Average",
+        "Unit": "Microseconds"
+     }
+  },
+  {
+     "Id": "channelMemberLatency",
+     "MetricStat": {
+        "Metric": {
+           "Namespace": "KathrinMM",
+           "MetricName": "ChannelMemberLatency"
+        },
+        "Period": 300,
+        "Stat": "Average",
+        "Unit": "Microseconds"
+     }
+  },
+  {
+     "Id": "apacheGet200Latency",
+     "MetricStat": {
+        "Metric": {
+           "Namespace": "KathrinMM",
+           "MetricName": "apache-latency",
+           "Dimensions": [
+              {
+                "Name": "method",
+                "Value": "GET"
+              },
+              {
+                "Name": "status",
+                "Value": "200"
+              }
+           ]
+        },
+        "Period": 300,
+        "Stat": "Average",
+        "Unit": "Microseconds"
+     }
+  },
+  {
+     "Id": "apachePost200Count",
+     "MetricStat": {
+        "Metric": {
+           "Namespace": "KathrinMM",
+           "MetricName": "apache-latency",
+           "Dimensions": [
+              {
+                "Name": "method",
+                "Value": "POST"
+              },
+              {
+                "Name": "status",
+                "Value": "200"
+              }
+           ]
+        },
+        "Period": 300,
+        "Stat": "Average",
+        "Unit": "Microseconds"
+     }
+  }
+]
