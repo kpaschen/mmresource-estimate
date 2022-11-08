@@ -15,3 +15,5 @@ Group=mattermost
 LimitNOFILE=49152
 
 [Install]
+WantedBy=multi-user.target
+
