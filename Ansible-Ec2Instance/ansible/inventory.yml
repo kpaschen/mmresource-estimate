@@ -1,5 +1,0 @@
-mattermost:
-  hosts:
-    18.185.89.139:
-      ansible_user: ubuntu
-     

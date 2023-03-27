@@ -1,0 +1,101 @@
+---
+- name: 
+  become: yes
+  hosts: tag_quangcao_database
+  remote_user: ubuntu
+  become_method: sudo
+  pre_tasks:
+
+    - name: obtain the private ip address of the mattermost server
+      set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
+      with_items: "{{ groups['tag_Mattermost'] }}"
+      register: mm_ips
+
+    - name: set private ip fact
+      set_fact: mm_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+
+
+  tasks:
+
+  - include_vars: vars.yml
+
+  - include_role:
+       name: postgres
+       tasks_from: psqlinstall
+
+
+- name: Prepare instance for running mattermost
+  become: yes
+  hosts: tag_Mattermost
+  remote_user: ubuntu
+  become_method: sudo
+
+  pre_tasks:
+
+    - name: obtain the private ip address of the db server
+      set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
+      with_items: "{{ groups['tag_quangcao_database'] }}"
+      register: db_ips
+
+    - name: set db private ip fact
+      set_fact: db_private_ip="{{ db_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+
+  tasks:
+
+  - include_vars: vars.yml
+
+  - include_role:
+      name: mattermost
+      tasks_from: mminstall
+
+
+- name: Prepare instance for running mattermost then listens to nginx
+  become: yes
+  hosts: tag_Mattermost
+  remote_user: ubuntu
+  become_method: sudo
+
+  pre_tasks:
+
+    - name: obtain the private ip address of the db server
+      set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
+      with_items: "{{ groups['tag_quangcao_database'] }}"
+      register: db_ips
+
+    - name: set db private ip fact
+      set_fact: db_private_ip="{{ db_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+
+  tasks:
+
+  - include_vars: vars.yml
+
+  - include_role:
+      name: mattermost
+      tasks_from: mminstall
+
+- name: Set up nginx
+  become: yes
+  hosts: tag_quangcao_nginx
+  remote_user: ubuntu
+  become_method: sudo
+  tasks:
+
+  - include_role:
+      name: nginx
+      tasks_from: nginstall
+
+- name: Configuring Loadtest instance
+  become: yes
+  hosts: tag_Loadtest
+  remote_user: ubuntu
+  become_method: sudo
+  tasks:
+
+  - include_vars: vars.yml
+  
+  - include_role:
+      name: loadtest
+      tasks_from: installload
+
+  
+      

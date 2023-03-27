@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mattermost.creds
+type: Opaque
+data:
+  DB_PASSWORD: <BASE 64 ENCODED SECRET>
+  DATABASE: <BASE 64 ENCODED SECRET>
+  USER: <BASE 64 ENCODED SECRET>
+  PASSWORD: <BASE 64 ENCODED SECRET>
+  SQL_SETTINGS: <BASE 64 ENCODED SECRET>

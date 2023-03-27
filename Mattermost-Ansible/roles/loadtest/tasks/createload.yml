@@ -1,0 +1,39 @@
+- name: check if test instance exists
+  shell: |
+    export AWS_PROFILE={aws_profile_name}
+    aws ec2 describe-instances --filters Name=instance-state-name,Values=running "Name=tag:Name,Values=Loadtest"  |jq -r '.Reservations[].Instances[]| . as $i | [($i.Tags|from_entries|.Name)?, $i.InstanceId, $i.PrivateIpAddress] |@csv'
+  ignore_errors: yes
+  register: instance_exists
+
+- debug: msg={{instance_exists.msg}}
+  register: msg
+
+- name: launch loadtest instance.
+  amazon.aws.ec2_instance:
+    name: Loadtest
+    profile: {aws_profile_name}
+    region: eu-central-1
+    key_name: ansible
+    instance_type: t2.micro
+    security_group: Mattermost
+    vpc_subnet_id: subnet-08c70b156c1c58887
+    network:
+      assign_public_ip: true
+      delete_on_termination: true
+    image_id: ami-0caef02b518350c8b 
+    volumes: 
+      - device_name: /dev/sda1
+        ebs: 
+          volume_size: 15
+          volume_type: gp2
+          delete_on_termination: true
+    tags:
+     Env: Mattermost
+     User: quangcao
+    state: running
+  when: instance_exists.msg == ""
+
+- name: show message if loadtest instance exists
+  debug:
+    msg: The loadtest instance exists.
+  when: instance_exists is succeeded

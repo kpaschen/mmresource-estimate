@@ -1,0 +1,61 @@
+---
+- name: Install docker
+  hosts: ubuntu1
+  become: yes
+  remote_user: ubuntu
+  become_method: sudo
+  tasks:
+
+    - name: update instance
+      ansible.builtin.apt:
+        name: "*"
+        state: latest
+
+    - name: install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - python3-docker
+          - python3-yaml
+        state: latest
+        update_cache: true
+
+    - name: create keyrings directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings 
+        state: directory
+
+    - name: add Docker GPG key
+      ansible.builtin.get_url:
+        url: "https://download.docker.com/linux/ubuntu/gpg"
+        dest: /etc/apt/keyrings/docker.gpg
+        mode: a+w
+        force: true
+
+    - name: import the elasticsearch apt key from the keyserver
+      apt_key:
+        id: 7EA0A9C3F273FCD8
+        keyserver: keyserver.ubuntu.com
+        state: present
+      become: true
+
+    - name: add Docker repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+        state: present
+        update_cache: yes
+
+    - name: update apt and install docker
+      apt:
+        pkg:
+          - docker-ce 
+          - docker-ce-cli 
+          - containerd.io 
+          - docker-compose-plugin
+          - docker-compose
+        state: latest
+        update_cache: yes

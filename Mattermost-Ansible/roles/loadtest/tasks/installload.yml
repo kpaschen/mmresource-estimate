@@ -1,0 +1,22 @@
+- name: install dependencies
+  apt:
+    pkg:
+      - golang-go
+    state: latest
+    update_cache: true
+
+- name: Download mmloadtesting package
+  git:
+    repo: https://github.com/mattermost/mattermost-load-test-ng.git
+    dest: /home/ubuntu/mattermost
+    clone: yes
+    update: yes
+
+- name: Add a script that change the ip address in the mattermost config file
+  ansible.builtin.copy:
+    src: roles/loadtest/file/helper.sh
+    dest: /home/ubuntu/helper.sh
+    mode: "a+x"
+
+
+  

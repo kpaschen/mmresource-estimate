@@ -1,0 +1,18 @@
+---
+- name: get docker images with ansible
+  hosts: ubuntu1
+  become: yes
+  remote_user: ubuntu
+  become_method: sudo
+  tasks:
+
+    - name: copy the project file to remote vm
+      copy:
+        src: ~/Desktop/Recap/ansibe-docker-mattermost/mattermost
+        dest: /home/ubuntu/
+
+    - name: run mattermost docker compose
+      community.docker.docker_compose:
+        project_src: /home/ubuntu/mattermost
+        files:
+          - docker-compose.yml

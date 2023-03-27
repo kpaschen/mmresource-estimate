@@ -1,0 +1,21 @@
+- name: create aws cloudwatch directory
+  ansible.builtin.file:
+    path: /home/ubuntu/awscloudwatch
+    state: directory
+
+- name: Install cloudwatch agent
+  apt:
+    deb: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+      
+- name: Add config.json file to awscloudwatchg agent
+  template:
+    src: roles/monitoring/file/config.json
+    dest: /opt/aws/amazon-cloudwatch-agent/bin/
+
+- name: Starting cloudwatch service
+  command: /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
+
+- name: enable cloudwatch agent
+  ansible.builtin.systemd:
+    name: amazon-cloudwatch-agent
+    enabled: yes

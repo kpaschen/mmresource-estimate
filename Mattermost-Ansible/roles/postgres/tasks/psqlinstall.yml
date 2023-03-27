@@ -1,0 +1,66 @@
+- name: install postgres
+  apt:
+     pkg:
+        - postgresql
+        - postgresql-contrib
+        - python3-psycopg2 # community.postgres requirement
+        - acl # community.postgres requirement
+     state: latest
+     update_cache: true
+     
+- name: ensure postgres service is running
+  service: 
+    name: postgresql
+    state: started
+     
+- name: enable postgresql service
+  ansible.builtin.systemd:
+    name: postgresql
+    enabled: yes
+
+- name: create mattermost database
+  community.postgresql.postgresql_db:
+    name: "{{db_name}}"
+    state: present
+  become: yes
+  become_user: postgres 
+ 
+- name: create mattermost user
+  community.postgresql.postgresql_user:
+    name: "{{db_username}}"
+    password: "{{db_password}}"
+  become_user: postgres
+ 
+- name: grant the user access to the Mattermost database
+  community.postgresql.postgresql_privs:
+    db: "{{db_name}}"
+    privs: ALL
+    roles: "{{db_username}}"
+    objs: ALL_IN_SCHEMA
+  become_user: postgres
+    
+- name: ensure postgres listenl on "*"
+  lineinfile: #to replace a line
+    dest: /etc/postgresql/14/main/postgresql.conf
+    regexp: "#listen_addresses ="
+    line: "listen_addresses = '*'"
+
+- name: restart postgresql service
+  ansible.builtin.systemd:
+    name: postgresql
+    state: restarted
+        
+- name: modify the file pg_hba.conf to allow the Mattermost server to communicate with the database.
+  community.postgresql.postgresql_pg_hba:
+    dest: /etc/postgresql/14/main/pg_hba.conf
+    contype: host
+    users: {your mattermost's user name}
+    source: "{{mm_private_ip}}/32"
+    databases: {Your mattermost's database name}
+    method: md5
+    create: true
+
+- name: reload postgresql service
+  ansible.builtin.systemd:
+    name: postgresql
+    state: reloaded

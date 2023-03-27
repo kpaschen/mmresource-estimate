@@ -1,0 +1,46 @@
+- name: Launching EC2 instance
+  hosts: local
+  gather_facts: no
+  tasks:
+
+    - include_vars:
+        vars.yml
+
+    - include_role:
+        name: mattermost
+        tasks_from: mattermost
+      
+    - include_role:
+        name: loadtest
+        tasks_from: createload
+
+    - include_role:
+        name: nginx
+        tasks_from: ngincreate
+
+    - include_role:
+        name: postgres
+        tasks_from: psqlcreate
+
+    - name: obtain mattermost's private ip address
+      shell: |
+        export AWS_PROFILE={aws_profile_name} 
+        aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=tag:Name,Values=Mattermost" --query 'Reservations[*].Instances[*].[PrivateIpAddress]' --output text
+      ignore_errors: yes
+      register: mm_ips
+
+    - debug: msg="{{mm_ips.stdout}}"
+
+    - set_fact:
+        string_to_echo: "{{mm_ips.stdout}}"
+
+    - name: add mm_private_ip to mattermost nginx fille
+      lineinfile: #to replace a line
+        dest: roles/nginx/files/mattermost
+        regexp: '^(.*):8065(.*)$'
+        line: "   server {{mm_ips.stdout}}:8065;"
+        backrefs: yes # The backrefs option guarantees that if the regexp does not match, the file will be left unchanged.
+
+    
+
+
