@@ -1,6 +1,6 @@
 - name: Prepare instance for running postgres
   become: yes
-  hosts: tag_database
+  hosts: tag_mattermost
   remote_user: root
   become_method: sudo
   pre_tasks:
@@ -28,7 +28,7 @@
   pre_tasks:
   - name: obtain the private ip address of the db server
     set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
-    with_items: "{{ groups['tag_database'] }}"
+    with_items: "{{ groups['tag_mattermost'] }}"
     register: db_ips
 
   - name: set db private ip fact
@@ -54,7 +54,7 @@
 
 - name: set up apache
   become: yes
-  hosts: tag_mattermost
+  hosts: tag_reverseproxy
   remote_user: root
   become_method: sudo
 
@@ -64,7 +64,7 @@
 
 - name: set up monitoring
   become: yes
-  hosts: tag_mattermost
+  hosts: tag_reverseproxy
   remote_user: root
   become_method: sudo
   pre_tasks:

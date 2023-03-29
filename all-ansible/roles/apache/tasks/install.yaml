@@ -30,6 +30,18 @@
     src: files/mattermost
     dest: /etc/apache2/sites-available/mattermost.conf
 
+- name: adapt mattermost server url
+  ansible.builtin.lineinfile:
+     path: /etc/apache2/sites-available/mattermost.conf
+     regexp: 'ProxyPass "/" '
+     line: '    ProxyPass "/" "http://{{ mm_private_ip}}:8065/"' 
+
+- name: adapt mattermost reverse url
+  ansible.builtin.lineinfile:
+     path: /etc/apache2/sites-available/mattermost.conf
+     regexp: 'ProxyPassReverse "/" '
+     line: '    ProxyPassReverse "/" "http://{{ mm_private_ip}}:8065/"' 
+
 - name: create symlink for mattermost conf
   file:
     src: /etc/apache2/sites-available/mattermost.conf
@@ -39,21 +51,6 @@
 - name: enable mattermost, disable default site
   shell:
      cmd: a2ensite mattermost.conf && a2dissite 000-default.conf
-
-- name: create prometheus site
-  template:
-    src: files/prometheus.conf
-    dest: /etc/apache2/sites-available/prometheus.conf
-
-- name: create symlink for prometheus configuration
-  file:
-    src: /etc/apache2/sites-available/prometheus.conf
-    dest: /etc/apache2/sites-enabled/prometheus.conf
-    state: link
-
-- name: enable prometheus
-  shell:
-     cmd: a2ensite prometheus.conf
 
 - name: copy apache2.conf file
   copy:

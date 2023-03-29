@@ -1,10 +1,10 @@
 - name: find database instance
   amazon.aws.ec2_instance_info:
     filters:
-      "tag:Name": "{{ name_prefix }}-mmdb-instance"
+      "tag:Name": "{{ name_prefix }}-mm-instance"
       "tag:Application": "mattermost"
       "tag:User": "{{ name_prefix }}"
-      "tag:Purpose": "database"
+      "tag:Purpose": "mattermost"
   register: db_instance_info
 
 - set_fact:
@@ -16,26 +16,26 @@
 - set_fact:
      db_instance_subnet: "{% if db_instance_subnets!=[] %}{{ db_instance_subnets | first }}{% else %}{{ chosen_subnet.subnet_id }}{% endif %}"
 
-- name: create database instance
-  amazon.aws.ec2_instance:
-    name: "{{ name_prefix }}-mmdb-instance"
-    state: started
-    exact_count: 1
-    filters:
-      "tag:Name": "{{ name_prefix }}-mmdb-instance"
-      "instance-state-name": "running"
-    key_name: "{{ name_prefix }}-mm-key-pair"
-    security_groups:
-    -  "{{ name_prefix }}-mm-security-group"
-    -  "{{ name_prefix }}-mm-admin-group"
-    vpc_subnet_id : "{{ db_instance_subnet }}"
-    instance_type: t2.micro
-    # just a standard ubuntu base image
-    image_id: "ami-065deacbcaac64cf2"
-    detailed_monitoring: yes
-    instance_role: logstreamers
-    tags:
-       Application: mattermost
-       User: "{{ name_prefix }}"
-       Purpose: database
+#- name: create database instance
+#  amazon.aws.ec2_instance:
+#    name: "{{ name_prefix }}-mmdb-instance"
+#    state: started
+#    exact_count: 1
+#    filters:
+#      "tag:Name": "{{ name_prefix }}-mmdb-instance"
+#      "instance-state-name": "running"
+#    key_name: "{{ name_prefix }}-mm-key-pair"
+#    security_groups:
+#    -  "{{ name_prefix }}-mm-security-group"
+#    -  "{{ name_prefix }}-mm-admin-group"
+#    vpc_subnet_id : "{{ db_instance_subnet }}"
+#    instance_type: t2.micro
+#    # just a standard ubuntu base image
+#    image_id: "ami-065deacbcaac64cf2"
+#    detailed_monitoring: yes
+#    instance_role: logstreamers
+#    tags:
+#       Application: mattermost
+#       User: "{{ name_prefix }}"
+#       Purpose: database
 

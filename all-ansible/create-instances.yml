@@ -11,6 +11,10 @@
          tasks_from: create
 
     - include_role:
+	 name: apache
+         tasks_from: create
+
+    - include_role:
          name: mattermost
          tasks_from: create
 
