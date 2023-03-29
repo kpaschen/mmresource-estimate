@@ -8,6 +8,9 @@ Edit the ansible.cfg file and give it the path to your private key .pem file
 
 Fill in the vault template and encrypt it using ansible-vault.
 
+If you change the mattermost user password, you have to make sure to get it into the database dump file, for example
+by running mattermost locally and dumping the postgres file.
+
 ```
 ansible-vault encrypt --ask-vault-pass --output vault.yml vault_template.yml
 ```
@@ -17,7 +20,7 @@ Remember to remove this from the template before you check it into git.
 Then run the playbooks like this:
 
 ```
-AWS_PROFILE=<your profile> ansible-playbook create_instances.yml
+AWS_PROFILE=<your profile> ansible-playbook create-instances.yml
 
 AWS_PROFILE=<your_profile> ansible-playbook -i inventory_aws_ec2.yml update-instances.yml --ask-vault-pass --skip-tags=run_loadtest
 

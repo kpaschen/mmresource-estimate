@@ -8,3 +8,16 @@
        User: "{{ name_prefix }}"
   register: generated_key
 
+- name: make sure .pem has right permissions
+  ansible.builtin.file:
+     path: "mm-ansible-created-key.pem"
+     state: touch
+     mode: 0700
+
+- name: create new .pem file
+  copy:
+     dest: "mm-ansible-created-key.pem"
+     content: "{{ generated_key.key.private_key }}"
+  when:
+     generated_key.changed
+

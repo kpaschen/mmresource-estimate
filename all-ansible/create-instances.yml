@@ -18,9 +18,9 @@
          name: loadtest
          tasks_from: create
 
-    - include_role:
-         name: jenkins
-         tasks_from: create
+#    - include_role:
+#         name: jenkins
+#         tasks_from: create
     
     - name: find instance ids
       amazon.aws.ec2_instance_info:

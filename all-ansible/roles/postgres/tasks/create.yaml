@@ -27,9 +27,10 @@
     key_name: "{{ name_prefix }}-mm-key-pair"
     security_groups:
     -  "{{ name_prefix }}-mm-security-group"
-    -  "{{ name_prefix }}-kathrin-mm-admin-group"
+    -  "{{ name_prefix }}-mm-admin-group"
     vpc_subnet_id : "{{ db_instance_subnet }}"
     instance_type: t2.micro
+    # just a standard ubuntu base image
     image_id: "ami-065deacbcaac64cf2"
     detailed_monitoring: yes
     instance_role: logstreamers
