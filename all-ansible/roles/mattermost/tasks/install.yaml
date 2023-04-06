@@ -1,7 +1,6 @@
 - name: install depencencies
   apt:
     pkg:
-      - nginx
       - postgresql-client
     state: latest
     update_cache: true

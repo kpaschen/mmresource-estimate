@@ -8,3 +8,14 @@ jenkins_iam_role: mm-jenkins
 jenkins_key_pair: mm-jenkins
 
 name_prefix: "kathrin"
+
+db_instance_tag: tag_mattermost
+reverseproxy_instance_tag: tag_mattermost
+
+mattermost_purpose_tag: mattermost
+db_purpose_tag: mattermost
+reverseproxy_purpose_tag: mattermost
+
+db_instance_name: "kathrin-mm-instance"
+reverseproxy_instance_name: "kathrin-mm-instance"
+mattermost_instance_name: "kathrin-mm-instance"

@@ -1,6 +1,6 @@
 - name: Prepare instance for running postgres
   become: yes
-  hosts: tag_mattermost
+  hosts: "{{ db_instance_tag }}"
   remote_user: root
   become_method: sudo
   pre_tasks:
@@ -54,17 +54,18 @@
 
 - name: set up apache
   become: yes
-  hosts: tag_reverseproxy
+  hosts: "{{ reverseproxy_instance_tag }}"
   remote_user: root
   become_method: sudo
 
   tasks:
   - include_role:
        name: apache
+       tasks_from: install
 
 - name: set up monitoring
   become: yes
-  hosts: tag_reverseproxy
+  hosts: "{{ reverseproxy_instance_tag }}"
   remote_user: root
   become_method: sudo
   pre_tasks:

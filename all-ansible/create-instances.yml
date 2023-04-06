@@ -11,7 +11,7 @@
          tasks_from: create
 
     - include_role:
-	 name: apache
+         name: apache
          tasks_from: create
 
     - include_role:
@@ -30,7 +30,7 @@
       amazon.aws.ec2_instance_info:
         filters:
           "tag:Application": "mattermost"
-          "tag:User": "kathrin"
+          "tag:User": "{{ name_prefix }}"
       register: instance_info
 
     - set_fact:

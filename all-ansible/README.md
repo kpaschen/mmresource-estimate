@@ -17,12 +17,14 @@ ansible-vault encrypt --ask-vault-pass --output vault.yml vault_template.yml
 
 Remember to remove this from the template before you check it into git.
 
+You can choose whether you want separate instances per purpose (mattermost, db, reverseproxy) or the same by setting the instance_tag variables. Edit vars.yaml and pass the tags on the commandline for the update-instances playbook as shown below.
+
 Then run the playbooks like this:
 
 ```
 AWS_PROFILE=<your profile> ansible-playbook create-instances.yml
 
-AWS_PROFILE=<your_profile> ansible-playbook -i inventory_aws_ec2.yml update-instances.yml --ask-vault-pass --skip-tags=run_loadtest
+AWS_PROFILE=<your_profile> ansible-playbook -i inventory_aws_ec2.yml update-instances.yml --ask-vault-pass --skip-tags=run_loadtest -e db_instance_tag=tag_mattermost,reverseproxy_instance_tag=tag_mattermost
 
 AWS_PROFILE=<your profile> ansible-playbook -i inventory_aws_ec2.yml run-loadtest.yml --ask-vault-pass
 ```

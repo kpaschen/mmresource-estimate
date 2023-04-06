@@ -1,6 +1,6 @@
 - name: create mattermost instance
   amazon.aws.ec2_instance:
-    name: "{{ name_prefix }}-mm-instance"
+    name: "{{ mattermost_instance_name }}"
     state: started
     exact_count: 1
     key_name: "{{ name_prefix }}-mm-key-pair"
@@ -8,7 +8,7 @@
     -  "{{ name_prefix }}-mm-security-group"
     -  "{{ name_prefix }}-mm-admin-group"
     filters:
-      "tag:Name": "{{ name_prefix }}-mm-instance"
+      "tag:Name": "{{ mattermost_instance_name }}"
       "instance-state-name": "running"
     vpc_subnet_id : "{{ db_instance_subnet }}"
     instance_type: t2.micro
@@ -18,5 +18,5 @@
     tags:
        Application: mattermost
        User: "{{ name_prefix }}"
-       Purpose: mattermost
+       Purpose: "{{ mattermost_purpose_tag }}"
 
