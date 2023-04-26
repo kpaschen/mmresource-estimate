@@ -8,11 +8,16 @@
         # However, you must set it for any further virtual host explicitly.
         #ServerName www.example.com
 
+       <Proxy balancer://mattermostset>
+                BalancerMember http://127.0.0.1:8065
+                ProxySet lbmethod=bytraffic
+        </Proxy>
+
         ServerAdmin webmaster@localhost
         DocumentRoot /var/www/html
         ProxyPass "/server-status" !
-        ProxyPass "/" "http://127.0.0.1:8065/"
-        ProxyPassReverse "/" "http://127.0.0.1:8065/"
+        ProxyPass "/" "balancer://mattermostset/"
+        ProxyPassReverse "/" "balancer://mattermostset/"
         ProxyPreserveHost On
 
         # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,

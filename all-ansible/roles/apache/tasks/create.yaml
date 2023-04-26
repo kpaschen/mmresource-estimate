@@ -10,7 +10,7 @@
         "tag:Name": "{{ reverseproxy_instance_name }}"
         "instance-state-name": "running"
      vpc_subnet_id: "{{ db_instance_subnet }}"
-     instance_type: t2.micro
+     instance_type: "{{ instance_type }}"
      image_id: "{{ loadtest_ami }}"
      detailed_monitoring: yes
      instance_role: logstreamers

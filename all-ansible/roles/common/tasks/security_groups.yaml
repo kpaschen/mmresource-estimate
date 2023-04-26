@@ -54,6 +54,10 @@
           ports: [22]
           group_name: "{{ name_prefix }}-mm-admin-group"
           rule_desc: "jenkins can ssh to the loadtest runner"
+        - proto: tcp
+          ports: [8065]
+          rule_desc: "allow incoming traffic to mattermost from reverseproxy"
+          group_name: "{{ name_prefix }}-mm-security-group"
      egress_rules:
         - proto: tcp
           rule_desc: "allow traffic to database"
@@ -63,4 +67,9 @@
           ports: [9113]
           rule_desc: "allow prometheus scraping activity"
           group_name: "{{ name_prefix }}-mm-security-group"
+        - proto: tcp
+          ports: [8065]
+          rule_desc: "allow traffic from reverseproxy to mattermost"
+          group_name: "{{ name_prefix }}-mm-security-group"
+          
 

@@ -2,7 +2,7 @@
   amazon.aws.ec2_instance:
     name: "{{ mattermost_instance_name }}"
     state: started
-    exact_count: 1
+    exact_count: 2
     key_name: "{{ name_prefix }}-mm-key-pair"
     security_groups:
     -  "{{ name_prefix }}-mm-security-group"
@@ -11,7 +11,7 @@
       "tag:Name": "{{ mattermost_instance_name }}"
       "instance-state-name": "running"
     vpc_subnet_id : "{{ db_instance_subnet }}"
-    instance_type: t2.micro
+    instance_type: "{{ instance_type }}"
     image_id: "ami-065deacbcaac64cf2"
     detailed_monitoring: yes
     instance_role: logstreamers

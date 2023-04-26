@@ -18,7 +18,7 @@
 
 - name: enable proxy module
   shell:
-     cmd: a2enmod proxy && a2enmod proxy_http
+     cmd: a2enmod proxy && a2enmod proxy_http && a2enmod lbmethod_bytraffic
 
 - name: create apache_exporter service
   template:
@@ -30,17 +30,11 @@
     src: files/mattermost
     dest: /etc/apache2/sites-available/mattermost.conf
 
-- name: adapt mattermost server url
+- name: adapt mattermost balancer members
   ansible.builtin.lineinfile:
      path: /etc/apache2/sites-available/mattermost.conf
-     regexp: 'ProxyPass "/" '
-     line: '    ProxyPass "/" "http://{{ mm_private_ip}}:8065/"' 
-
-- name: adapt mattermost reverse url
-  ansible.builtin.lineinfile:
-     path: /etc/apache2/sites-available/mattermost.conf
-     regexp: 'ProxyPassReverse "/" '
-     line: '    ProxyPassReverse "/" "http://{{ mm_private_ip}}:8065/"' 
+     regexp: 'BalancerMember "/" '
+     line: '    BalancerMember "/" "http://{{ mm_private_ip}}:8065/"' 
 
 - name: create symlink for mattermost conf
   file:
@@ -75,11 +69,13 @@
   ansible.builtin.systemd:
      name: nginx.service
      state: stopped
+  ignore_errors: true
 
 - name: disable nginx
   ansible.builtin.systemd:
      name: nginx.service
      enabled: no
+  ignore_errors: true
 
 - name: restart apache
   ansible.builtin.systemd:

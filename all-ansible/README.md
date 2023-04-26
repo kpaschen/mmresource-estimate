@@ -24,7 +24,7 @@ Then run the playbooks like this:
 ```
 AWS_PROFILE=<your profile> ansible-playbook create-instances.yml
 
-AWS_PROFILE=<your_profile> ansible-playbook -i inventory_aws_ec2.yml update-instances.yml --ask-vault-pass --skip-tags=run_loadtest -e db_instance_tag=tag_mattermost,reverseproxy_instance_tag=tag_mattermost
+AWS_PROFILE=<your_profile> ansible-playbook -i inventory_aws_ec2.yml update-instances.yml --ask-vault-pass --skip-tags=run_loadtest -e "db_instance_tag=tag_mattermost reverseproxy_instance_tag=tag_mattermost"
 
 AWS_PROFILE=<your profile> ansible-playbook -i inventory_aws_ec2.yml run-loadtest.yml --ask-vault-pass
 ```
