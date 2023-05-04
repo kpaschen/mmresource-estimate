@@ -89,14 +89,14 @@
   remote_user: root
   become_method: sudo
   pre_tasks:
-  - name: obtain the private ip address of the mattermost server
+  - name: obtain the private ip address of the reverse proxy server
     set_fact: private_ip="{{ hostvars[item].private_ip_address }}"
-    with_items: "{{ groups['tag_mattermost'] }}"
+    with_items: "{{ groups['tag_database'] }}"
     register: mm_ips
     tags: loadtest
 
   - name: set private ip fact
-    set_fact: mm_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
+    set_fact: proxy_private_ip="{{ mm_ips.results | map(attribute='ansible_facts.private_ip') | first }}"
     tags: loadtest
 
   tasks:

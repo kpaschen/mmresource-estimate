@@ -18,7 +18,7 @@
 
 - name: enable proxy module
   shell:
-     cmd: a2enmod proxy && a2enmod proxy_http && a2enmod lbmethod_bytraffic
+     cmd: a2enmod proxy && a2enmod proxy_http && a2enmod lbmethod_bytraffic && a2enmod rewrite
 
 - name: create apache_exporter service
   template:
@@ -33,8 +33,14 @@
 - name: adapt mattermost balancer members
   ansible.builtin.lineinfile:
      path: /etc/apache2/sites-available/mattermost.conf
-     regexp: 'BalancerMember "/" '
-     line: '    BalancerMember "/" "http://{{ mm_private_ip}}:8065/"' 
+     regexp: 'BalancerMember http://127.0.0.1:8065'
+     line: 'BalancerMember "http://{{ mm_private_ip}}:8065/"' 
+
+- name: adapt rewrite rule
+  ansible.builtin.lineinfile:
+     path: /etc/apache2/sites-available/mattermost.conf
+     regexp: 'ws://127.0.0.1:8065%{REQUEST_URI} [P,QSA,L]'
+     line: 'RewriteRule .* ws://{{ mm_private_ip}}:8065%{REQUEST_URI} [P,QSA,L]'
 
 - name: create symlink for mattermost conf
   file:

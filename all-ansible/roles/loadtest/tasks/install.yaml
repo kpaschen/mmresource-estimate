@@ -2,12 +2,23 @@
   apt:
      pkg:
      - git
-     - golang
      - default-jre
      - unzip
      state: latest
      update_cache: true
   tags: loadtest
+
+- name: see if go is installed
+  stat:
+     path: /usr/local/go/bin/go
+  register: go_installed
+  tags: loadtest
+
+- name: install go v1.20
+  shell:
+    cmd: curl "https://dl.google.com/go/go1.20.linux-amd64.tar.gz" -o golang.tgz && tar xzf golang.tgz && mv go /usr/local && rm -f golang.tgz
+  tags: loadtest
+  when: go_installed.stat.exists == false
 
 - name: see if aws client is installed
   stat:
@@ -17,7 +28,7 @@
 
 - name: install aws client
   shell:
-     cmd: curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && ./aws/install --bin-dir=/usr/local/bin
+     cmd: curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && ./aws/install && rm -f awscliv2.zip
   when: aws_client_exists.stat.exists == false
   tags: loadtest
 
@@ -50,14 +61,14 @@
   ansible.builtin.lineinfile:
      path: mattermost-load-test-ng/config/config.json
      regexp: '"ServerURL"'
-     line: '     "ServerURL": "http://{{mm_private_ip}}:80",' 
+     line: '     "ServerURL": "http://{{proxy_private_ip}}:80",' 
   tags: loadtest
 
 - name: adapt websocketurl 
   ansible.builtin.lineinfile:
      path: mattermost-load-test-ng/config/config.json
      regexp: '"WebSocketURL"'
-     line: '     "WebSocketURL": "ws://{{mm_private_ip}}:80",' 
+     line: '     "WebSocketURL": "ws://{{proxy_private_ip}}:80",' 
   tags: loadtest
 
 - name: adapt adminemail 
@@ -85,7 +96,7 @@
 - name: run ltagent init in order to download all the go dependencies
   shell:
      chdir: /home/ubuntu/mattermost-load-test-ng
-     cmd: go mod download && go mod tidy && go run ./cmd/ltagent init
+     cmd: /usr/local/go/bin/go mod download && /usr/local/go/bin/go mod tidy && /usr/local/go/bin/go run ./cmd/ltagent init
   tags: loadtest
 
 - name: change ownership of the loadtest files to ubuntu

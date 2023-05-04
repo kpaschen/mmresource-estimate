@@ -13,6 +13,12 @@
                 ProxySet lbmethod=bytraffic
         </Proxy>
 
+	RewriteEngine On
+	RewriteCond %{REQUEST_URI} /api/v[0-9]+/(users/)?websocket [NC]
+  	RewriteCond %{HTTP:UPGRADE} ^WebSocket$ [NC,OR]
+  	RewriteCond %{HTTP:CONNECTION} ^Upgrade$ [NC]
+  	RewriteRule .* ws://127.0.0.1:8065%{REQUEST_URI} [P,QSA,L]
+
         ServerAdmin webmaster@localhost
         DocumentRoot /var/www/html
         ProxyPass "/server-status" !

@@ -2,7 +2,7 @@
   amazon.aws.ec2_instance:
     name: "{{ mattermost_instance_name }}"
     state: started
-    exact_count: 2
+    exact_count: 1
     key_name: "{{ name_prefix }}-mm-key-pair"
     security_groups:
     -  "{{ name_prefix }}-mm-security-group"
